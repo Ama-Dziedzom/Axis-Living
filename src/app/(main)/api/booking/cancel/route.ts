@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase';
+import { getResend, FROM } from '@/lib/resend';
+import { emailTemplates } from '@/lib/emailTemplates';
 
 interface BookingRow {
     id: string;
@@ -68,16 +70,28 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Failed to cancel booking' }, { status: 500 });
         }
 
-        // Delegate email sending to portal (fire-and-forget)
-        const portalUrl = process.env.PORTAL_URL;
-        const emailSecret = process.env.EMAIL_SECRET;
-        if (portalUrl && emailSecret) {
-            fetch(`${portalUrl}/api/email/booking-cancellation`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${emailSecret}` },
-                body: JSON.stringify({ name: booking.name, email: booking.email, date: booking.date, time: booking.time }),
-            }).catch((e) => console.error('Portal cancellation email error:', e));
-        }
+        // Send cancellation emails
+        const resend = getResend();
+        const { data: tpl } = await db().from('email_templates').select('*').eq('id', 'booking_cancelled').single();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { subject, html } = (emailTemplates as any).bookingCancelled(booking.name, booking.date, booking.time, tpl ?? {});
+
+        await Promise.allSettled([
+            resend.emails.send({ from: FROM, to: [booking.email], subject, html }),
+            resend.emails.send({
+                from: FROM,
+                to: [process.env.ADMIN_EMAIL || process.env.RESEND_FROM_EMAIL || 'hello@axisliving.co.zm'],
+                subject: `Booking Cancelled: ${booking.name}`,
+                text: [
+                    'A client has cancelled their booking.',
+                    '',
+                    `Client: ${booking.name}`,
+                    `Email:  ${booking.email}`,
+                    `Date:   ${booking.date}`,
+                    `Time:   ${booking.time} (CAT)`,
+                ].join('\n'),
+            }),
+        ]);
 
         return NextResponse.json({ success: true });
 
