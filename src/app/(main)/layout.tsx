@@ -1,6 +1,7 @@
 import Navbar from "@/components/Navigation/Navbar";
 import Footer from "@/components/Navigation/Footer";
 import LookbookPopup from "@/components/EmailCapture/LookbookPopup";
+import CookieBanner from "@/components/CookieBanner";
 import { fetchSiteSettings, fetchHomeData } from "@/lib/data";
 
 export default async function MainLayout({ children }: { children: React.ReactNode }) {
@@ -15,6 +16,7 @@ export default async function MainLayout({ children }: { children: React.ReactNo
             <main>{children}</main>
             <Footer siteSettings={siteSettings} />
             <LookbookPopup data={homeData?.lookbookSection} />
+            <CookieBanner />
         </>
     );
 }
