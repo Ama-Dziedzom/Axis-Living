@@ -121,9 +121,9 @@ export async function fetchHomeData() {
         preFooterSection: {
             subtitle: "Start Your Journey",
             title: "Let's Talk About Your Space.",
-            body: "Begin your design journey with a complimentary consultation. Tell us about your vision, and we'll help you bring it to life.",
+            body: "Begin your design journey with a consultation. Tell us about your vision, and we'll help you bring it to life.",
             image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1600&q=80",
-            buttonText: "Book a Free Consultation"
+            buttonText: "Book a Consultation"
         }
     };
 }

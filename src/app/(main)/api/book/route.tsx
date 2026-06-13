@@ -3,7 +3,7 @@ import { getSupabase } from '@/lib/supabase';
 
 export async function POST(req: Request) {
     try {
-        const { name, email, phone, date, time, projectType, message, currency, amount, paymentReference } = await req.json();
+        const { name, email, phone, date, time, projectType, consultationType, message, currency, amount, paymentReference } = await req.json();
 
         if (!name || !email || !date || !time) {
             return NextResponse.json(
@@ -28,6 +28,7 @@ export async function POST(req: Request) {
                     date,
                     time,
                     project_type: projectType || null,
+                    consultation_type: consultationType || null,
                     message: message || null,
                     currency: currency || 'ZMW',
                     amount: amount || null,
@@ -53,7 +54,7 @@ export async function POST(req: Request) {
             fetch(`${portalUrl}/api/email/booking-confirmation`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${emailSecret}` },
-                body: JSON.stringify({ name, email, phone, date, time, projectType, message, meetingLink, cancellationUrl }),
+                body: JSON.stringify({ name, email, phone, date, time, projectType, consultationType, message, meetingLink, cancellationUrl }),
             }).catch((e) => console.error('Portal email error:', e));
         }
 

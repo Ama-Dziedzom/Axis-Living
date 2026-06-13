@@ -176,7 +176,7 @@ const AboutClient = ({ aboutData }: AboutClientProps) => {
                                     href="/booking"
                                     className="bg-accent text-white px-10 py-5 rounded-full inline-block text-xs font-bold tracking-[0.2em] uppercase hover:bg-foreground transition-all shadow-xl"
                                 >
-                                    Book a Free Consultation
+                                    Book a Consultation
                                 </Link>
                             </div>
                         </motion.div>

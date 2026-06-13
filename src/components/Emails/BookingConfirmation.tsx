@@ -5,6 +5,7 @@ interface BookingConfirmationEmailProps {
     date: string;
     time: string;
     meetingLink: string;
+    consultationType?: string;
 }
 
 export const BookingConfirmationEmail: React.FC<Readonly<BookingConfirmationEmailProps>> = ({
@@ -12,6 +13,7 @@ export const BookingConfirmationEmail: React.FC<Readonly<BookingConfirmationEmai
     date,
     time,
     meetingLink,
+    consultationType,
 }) => (
     <div style={{
         fontFamily: "'Manrope', 'Helvetica Neue', Helvetica, Arial, sans-serif",
@@ -89,26 +91,36 @@ export const BookingConfirmationEmail: React.FC<Readonly<BookingConfirmationEmai
                     </div>
                 </div>
 
-                {/* Meeting Link Section */}
+                {/* Meeting Link / Studio Section */}
                 <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-                    <p style={{ fontSize: '14px', color: '#64748B', marginBottom: '24px', fontFamily: "'Manrope', sans-serif" }}>
-                        We&apos;ll meet via Google Meet at the scheduled time.
-                    </p>
-                    <a href={meetingLink} style={{
-                        display: 'inline-block',
-                        backgroundColor: '#2F402C',
-                        color: '#FFFFFF',
-                        padding: '20px 40px',
-                        borderRadius: '99px',
-                        textDecoration: 'none',
-                        fontSize: '11px',
-                        fontWeight: 'bold',
-                        letterSpacing: '0.2em',
-                        textTransform: 'uppercase',
-                        fontFamily: "'Manrope', sans-serif",
-                    }}>
-                        Join Meeting
-                    </a>
+                    {consultationType === 'walk-in' ? (
+                        <p style={{ fontSize: '14px', color: '#64748B', lineHeight: '1.7', fontFamily: "'Manrope', sans-serif" }}>
+                            We&apos;ll see you at the studio at the scheduled time. Feel free to browse
+                            our material samples, fabrics, and finishes — our team will be on hand to
+                            walk you through everything.
+                        </p>
+                    ) : (
+                        <>
+                            <p style={{ fontSize: '14px', color: '#64748B', marginBottom: '24px', fontFamily: "'Manrope', sans-serif" }}>
+                                We&apos;ll meet via Google Meet at the scheduled time.
+                            </p>
+                            <a href={meetingLink} style={{
+                                display: 'inline-block',
+                                backgroundColor: '#2F402C',
+                                color: '#FFFFFF',
+                                padding: '20px 40px',
+                                borderRadius: '99px',
+                                textDecoration: 'none',
+                                fontSize: '11px',
+                                fontWeight: 'bold',
+                                letterSpacing: '0.2em',
+                                textTransform: 'uppercase',
+                                fontFamily: "'Manrope', sans-serif",
+                            }}>
+                                Join Meeting
+                            </a>
+                        </>
+                    )}
                 </div>
 
                 <p style={{ fontSize: '18px', lineHeight: '1.6', color: '#2F402C', fontStyle: 'italic', borderTop: '1px solid #E2E8F0', paddingTop: '24px', fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: '300' }}>

@@ -20,6 +20,8 @@ import {
     CreditCard,
     Lock,
     Smartphone,
+    MapPin,
+    Video,
 } from "lucide-react";
 
 // ───── Currency Config ─────
@@ -102,6 +104,7 @@ interface BookingFormData {
     phone: string;
     projectType: string;
     message: string;
+    consultationType: "walk-in" | "online" | "";
 }
 
 // ───── Component ─────
@@ -125,7 +128,9 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
         phone: "",
         projectType: "",
         message: "",
+        consultationType: "",
     });
+    const [nameError, setNameError] = useState<string | null>(null);
     const [currency, setCurrency] = useState<CurrencyConfig>(CURRENCIES[0]);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [mounted, setMounted] = useState(false);
@@ -208,6 +213,16 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        if (!formData.consultationType) return;
+
+        const nameParts = formData.name.trim().split(/\s+/);
+        const last = nameParts.length > 1 ? nameParts.slice(1).join(' ') : nameParts[0];
+        if (last.length < 2) {
+            setNameError("Please enter your full name — first and last name.");
+            return;
+        }
+        setNameError(null);
+
         setMobilePhone(formData.phone || "");
         setStep("payment");
     };
@@ -394,6 +409,7 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
                     date: formatSelectedDate(),
                     time: selectedTime,
                     projectType: formData.projectType,
+                    consultationType: formData.consultationType,
                     message: formData.message,
                     currency: currency.code,
                     amount: currency.amount,
@@ -414,7 +430,8 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
         setSelectedDate(null);
         setSelectedTime(null);
         setStep("date");
-        setFormData({ name: "", email: "", phone: "", projectType: "", message: "" });
+        setFormData({ name: "", email: "", phone: "", projectType: "", message: "", consultationType: "" });
+        setNameError(null);
         setCurrency(CURRENCIES[0]);
         setPaymentMethod("mobile_money");
         setMobilePhone("");
@@ -460,9 +477,8 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
                         Book a <span className="italic font-light">Consultation</span>
                     </motion.h1>
                     <p className="max-w-xl mx-auto text-foreground/60 text-lg leading-relaxed font-body mb-8">
-                        Book a free 30-minute discovery call. We&apos;ll talk about your project,
-                        your vision, and whether we&apos;re the right fit for each other. No
-                        pressure, no pitch. Just a conversation.
+                        Book a 30-minute discovery call — in-person at the studio or virtually. We&apos;ll talk about your project,
+                        your vision, and how we can bring it to life together.
                     </p>
                 </header>
 
@@ -763,18 +779,21 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
                                         <div className="relative">
                                             <User
                                                 size={16}
-                                                className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground/25"
+                                                className={`absolute left-4 top-1/2 -translate-y-1/2 ${nameError ? "text-red-400" : "text-foreground/25"}`}
                                             />
                                             <input
                                                 type="text"
-                                                placeholder="Full Name"
+                                                placeholder="Full Name (first and last)"
                                                 required
                                                 value={formData.name}
                                                 onChange={(e) =>
                                                     setFormData({ ...formData, name: e.target.value })
                                                 }
-                                                className="w-full pl-12 pr-4 py-4 bg-white border border-foreground/10 rounded-sm text-sm text-neutral-800 font-body placeholder:text-foreground/30 focus:outline-none focus:border-accent transition-all"
+                                                className={`w-full pl-12 pr-4 py-4 bg-white border rounded-sm text-sm text-neutral-800 font-body placeholder:text-foreground/30 focus:outline-none transition-all ${nameError ? "border-red-400 focus:border-red-400" : "border-foreground/10 focus:border-accent"}`}
                                             />
+                                            {nameError && (
+                                                <p className="mt-1.5 text-xs text-red-500">{nameError}</p>
+                                            )}
                                         </div>
 
                                         {/* Email */}
@@ -810,6 +829,34 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
                                                 }
                                                 className="w-full pl-12 pr-4 py-4 bg-white border border-foreground/10 rounded-sm text-sm text-neutral-800 font-body placeholder:text-foreground/30 focus:outline-none focus:border-accent transition-all"
                                             />
+                                        </div>
+
+                                        {/* Consultation Type */}
+                                        <div>
+                                            <p className="text-[10px] uppercase tracking-widest text-foreground/40 font-bold mb-3">
+                                                Consultation Type
+                                            </p>
+                                            <div className="grid grid-cols-2 gap-3">
+                                                {([
+                                                    { value: "walk-in", label: "Walk-in", sub: "In-person at the studio", Icon: MapPin },
+                                                    { value: "online",  label: "Online",  sub: "Virtual via video call",   Icon: Video  },
+                                                ] as const).map(({ value, label, sub, Icon }) => (
+                                                    <button
+                                                        key={value}
+                                                        type="button"
+                                                        onClick={() => setFormData({ ...formData, consultationType: value })}
+                                                        className={`flex flex-col items-center gap-2 py-5 px-4 border rounded-sm transition-all ${
+                                                            formData.consultationType === value
+                                                                ? "bg-accent text-white border-accent shadow-lg shadow-accent/20"
+                                                                : "bg-white text-foreground/60 border-foreground/10 hover:border-accent hover:text-accent"
+                                                        }`}
+                                                    >
+                                                        <Icon size={22} />
+                                                        <span className="text-xs font-bold tracking-wider uppercase">{label}</span>
+                                                        <span className={`text-[10px] leading-tight text-center ${formData.consultationType === value ? "opacity-70" : "opacity-50"}`}>{sub}</span>
+                                                    </button>
+                                                ))}
+                                            </div>
                                         </div>
 
                                         {/* Project type */}
@@ -1317,6 +1364,16 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
                                             <User size={16} className="text-accent" />
                                             <span className="font-medium">{formData.name}</span>
                                         </div>
+                                        {formData.consultationType && (
+                                            <div className="flex items-center gap-3 text-sm mt-1">
+                                                {formData.consultationType === "walk-in" ? (
+                                                    <MapPin size={16} className="text-accent" />
+                                                ) : (
+                                                    <Video size={16} className="text-accent" />
+                                                )}
+                                                <span className="font-medium capitalize">{formData.consultationType === "walk-in" ? "Walk-in (In-person)" : "Online (Video call)"}</span>
+                                            </div>
+                                        )}
                                     </motion.div>
 
                                     <motion.p
@@ -1329,8 +1386,11 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
                                         <span className="text-accent font-medium">
                                             {formData.email}
                                         </span>{" "}
-                                        for a calendar invite with your meeting link.
-                                        We&apos;re looking forward to hearing about your space!
+                                        for a confirmation.{" "}
+                                        {formData.consultationType === "online"
+                                            ? "We’ll send over a meeting link — looking forward to hearing about your space!"
+                                            : "We’ll see you at the studio — looking forward to meeting you!"
+                                        }
                                     </motion.p>
 
                                     <motion.button
@@ -1354,9 +1414,8 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
                                 What&apos;s Next?
                             </p>
                             <p className="max-w-md mx-auto italic text-lg opacity-90 leading-relaxed font-body">
-                                &ldquo;You&apos;re booked! Check your inbox, you&apos;ll
-                                find a calendar invite with your meeting link. We&apos;re looking
-                                forward to hearing about your space.&rdquo;
+                                &ldquo;You&apos;re booked! Check your inbox for your confirmation. We&apos;re looking
+                                forward to your visit.&rdquo;
                             </p>
                         </div>
                     )}

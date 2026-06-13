@@ -212,7 +212,7 @@ export default function HomeClient({ featuredProjects, featuredPosts, siteSettin
                                 href="/booking"
                                 className="bg-accent hover:bg-white text-white hover:text-accent px-12 py-5 rounded-full text-sm font-bold tracking-[0.2em] uppercase transition-all shadow-xl block"
                             >
-                                Book a Free Consultation
+                                Book a Consultation
                             </Link>
                         </motion.div>
                     </motion.div>
@@ -509,7 +509,7 @@ export default function HomeClient({ featuredProjects, featuredPosts, siteSettin
                         href="/booking"
                         className="bg-white text-foreground px-8 md:px-16 py-5 md:py-6 rounded-full text-xs md:text-sm font-bold tracking-[0.2em] uppercase hover:bg-accent hover:text-white transition-all shadow-2xl hover:scale-105 active:scale-95"
                     >
-                        {siteSettings?.preFooterSection?.buttonText || "Book a Free Consultation"}
+                        {siteSettings?.preFooterSection?.buttonText || "Book a Consultation"}
                     </Link>
                 </motion.div>
             </section>

@@ -109,7 +109,7 @@ const Navbar = ({ siteSettings }: NavbarProps) => {
                     href="/booking"
                     className="bg-accent text-white px-6 py-2 rounded-full hover:bg-accent/90 transition-all shadow-md hover:scale-105 active:scale-95"
                 >
-                    Book a Free Consultation
+                    Book a Consultation
                 </Link>
             </div>
 
@@ -187,7 +187,7 @@ const Navbar = ({ siteSettings }: NavbarProps) => {
                                     className="px-8 py-4 bg-accent text-white text-[10px] md:text-[12px] font-bold tracking-[0.3em] uppercase rounded-full shadow-2xl"
                                     onClick={() => setIsOpen(false)}
                                 >
-                                    Free Consultation
+                                    Book a Consultation
                                 </Link>
                             </motion.div>
                         </motion.div>
