@@ -25,7 +25,7 @@ type PageState =
     | { kind: 'not_found' }
     | { kind: 'error'; message: string };
 
-function CancelPageInner() {
+function CancelInner() {
     const searchParams = useSearchParams();
     const id = searchParams.get('id');
     const [state, setState] = useState<PageState>({ kind: 'loading' });
@@ -85,10 +85,8 @@ function CancelPageInner() {
                 transition={{ duration: 0.5 }}
                 className="w-full max-w-[480px] mx-auto"
             >
-                {/* Card */}
                 <div className="bg-white rounded-2xl shadow-[0_4px_32px_rgba(47,64,44,0.08)] overflow-hidden border border-border">
 
-                    {/* Loading */}
                     {state.kind === 'loading' && (
                         <div className="flex flex-col items-center justify-center py-20 px-8">
                             <Loader2 className="w-8 h-8 text-accent/40 animate-spin mb-4" />
@@ -96,7 +94,6 @@ function CancelPageInner() {
                         </div>
                     )}
 
-                    {/* Ready — show booking + confirm prompt */}
                     {(state.kind === 'ready' || state.kind === 'confirming' || state.kind === 'cancelling') && (
                         <div className="p-10">
                             <h1 className="font-heading text-2xl font-semibold text-foreground mb-2">
@@ -106,7 +103,6 @@ function CancelPageInner() {
                                 You&apos;re about to cancel the following consultation.
                             </p>
 
-                            {/* Booking details */}
                             <div className="bg-background rounded-xl p-6 mb-8 space-y-4">
                                 <div>
                                     <span className="text-[10px] uppercase tracking-[2px] font-bold text-accent/60 block mb-1">
@@ -136,7 +132,6 @@ function CancelPageInner() {
                                 </div>
                             </div>
 
-                            {/* Warning shown after first click */}
                             {state.kind === 'confirming' && (
                                 <motion.div
                                     initial={{ opacity: 0, y: 6 }}
@@ -150,7 +145,6 @@ function CancelPageInner() {
                                 </motion.div>
                             )}
 
-                            {/* Actions */}
                             <div className="flex flex-col gap-3">
                                 {state.kind === 'ready' && (
                                     <button
@@ -198,7 +192,6 @@ function CancelPageInner() {
                         </div>
                     )}
 
-                    {/* Success */}
                     {state.kind === 'cancelled' && (
                         <div className="flex flex-col items-center text-center py-14 px-10">
                             <CheckCircle2 className="w-12 h-12 text-accent mb-5" />
@@ -220,7 +213,6 @@ function CancelPageInner() {
                         </div>
                     )}
 
-                    {/* Already cancelled */}
                     {state.kind === 'already_cancelled' && (
                         <div className="flex flex-col items-center text-center py-14 px-10">
                             <XCircle className="w-12 h-12 text-foreground/20 mb-5" />
@@ -239,7 +231,6 @@ function CancelPageInner() {
                         </div>
                     )}
 
-                    {/* Not found */}
                     {state.kind === 'not_found' && (
                         <div className="flex flex-col items-center text-center py-14 px-10">
                             <XCircle className="w-12 h-12 text-foreground/20 mb-5" />
@@ -258,7 +249,6 @@ function CancelPageInner() {
                         </div>
                     )}
 
-                    {/* Error */}
                     {state.kind === 'error' && (
                         <div className="flex flex-col items-center text-center py-14 px-10">
                             <AlertTriangle className="w-12 h-12 text-amber-400 mb-5" />
@@ -282,10 +272,10 @@ function CancelPageInner() {
     );
 }
 
-export default function CancelPage() {
+export default function CancelClient() {
     return (
         <Suspense>
-            <CancelPageInner />
+            <CancelInner />
         </Suspense>
     );
 }

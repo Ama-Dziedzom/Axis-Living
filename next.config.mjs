@@ -19,6 +19,12 @@ const nextConfig = {
         buildActivity: true,
         buildActivityPosition: 'bottom-right',
     },
+    async rewrites() {
+        return [
+            { source: '/booking/cancel', destination: '/cancel' },
+        ];
+    },
+
     // Security headers
     async headers() {
         if (process.env.NODE_ENV === 'development') return [];
