@@ -158,7 +158,7 @@ const AboutClient = ({ aboutData }: AboutClientProps) => {
                             whileInView="animate"
                             viewport={{ once: true, margin: "-100px" }}
                         >
-                            <span className="text-accent text-[10px] uppercase font-bold tracking-[0.4em] mb-4 block underline decoration-accent/30 underline-offset-8">Our Philosophy</span>
+                            <span className="text-accent text-xs uppercase font-bold tracking-[0.4em] mb-4 block underline decoration-accent/30 underline-offset-8">Our Philosophy</span>
                             <h2 className="text-3xl md:text-6xl font-heading mb-12 leading-[1.25] tracking-wide">
                                 {aboutData?.headline || "Creating spaces that tell your story."}
                             </h2>
@@ -238,7 +238,7 @@ const AboutClient = ({ aboutData }: AboutClientProps) => {
                                 return (
                                     <span
                                         key={index}
-                                        className="px-6 py-3 border border-[#C9A84C] text-[#C9A84C] rounded-full text-[10px] font-bold uppercase tracking-widest"
+                                        className="px-6 py-3 border border-[#C9A84C] text-[#C9A84C] rounded-full text-xs font-bold uppercase tracking-widest"
                                     >
                                         {label}
                                     </span>

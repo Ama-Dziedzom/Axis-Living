@@ -60,7 +60,7 @@ export default function PrivacyPage() {
             {/* Header */}
             <section className="pt-40 pb-16 px-6 lg:px-24 border-b border-foreground/5">
                 <div className="max-w-3xl mx-auto">
-                    <span className="text-accent text-[10px] uppercase font-bold tracking-[0.4em] mb-4 block">
+                    <span className="text-accent text-xs uppercase font-bold tracking-[0.4em] mb-4 block">
                         Legal
                     </span>
                     <h1 className="text-4xl md:text-6xl font-heading font-light leading-tight tracking-wide mb-6">

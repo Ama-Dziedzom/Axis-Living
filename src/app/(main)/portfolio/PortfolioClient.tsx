@@ -60,7 +60,7 @@ const PortfolioClient = ({ initialProjects }: PortfolioClientProps) => {
                                     key={cat}
                                     onClick={() => setFilter(cat)}
                                     className={cn(
-                                        "text-[10px] md:text-xs uppercase font-bold tracking-[0.2em] px-6 py-2 rounded-full border transition-all",
+                                        "text-xs md:text-sm uppercase font-bold tracking-[0.2em] px-6 py-2 rounded-full border transition-all",
                                         filter === cat
                                             ? "bg-accent text-white border-accent"
                                             : "bg-transparent text-foreground/70 border-foreground/30 hover:border-accent hover:text-accent hover:bg-accent/5"

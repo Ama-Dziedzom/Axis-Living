@@ -75,7 +75,7 @@ const JournalClient = ({ initialPosts, initialFeaturedPosts }: JournalClientProp
                                     key={cat}
                                     onClick={() => setFilter(cat)}
                                     className={cn(
-                                        "text-[10px] md:text-xs uppercase font-bold tracking-[0.2em] px-6 py-2 rounded-full border transition-all whitespace-nowrap",
+                                        "text-xs md:text-sm uppercase font-bold tracking-[0.2em] px-6 py-2 rounded-full border transition-all whitespace-nowrap",
                                         filter === cat
                                             ? "bg-accent text-white border-accent shadow-lg shadow-accent/20"
                                             : "bg-transparent text-foreground/40 border-foreground/10 hover:border-accent/40 hover:text-accent"
@@ -110,13 +110,13 @@ const JournalClient = ({ initialPosts, initialFeaturedPosts }: JournalClientProp
                                                 />
                                             )}
                                             <div className="absolute top-6 left-6">
-                                                <span className="bg-white/90 backdrop-blur-md text-accent text-[10px] font-bold uppercase tracking-[0.2em] px-4 py-2 rounded-full shadow-sm">
+                                                <span className="bg-white/90 backdrop-blur-md text-accent text-xs font-bold uppercase tracking-[0.2em] px-4 py-2 rounded-full shadow-sm">
                                                     {post.category}
                                                 </span>
                                             </div>
                                         </div>
                                         <div className="space-y-4">
-                                            <div className="flex items-center gap-6 text-[10px] uppercase tracking-widest text-foreground/40 font-bold">
+                                            <div className="flex items-center gap-6 text-xs uppercase tracking-widest text-foreground/40 font-bold">
                                                 <span className="flex items-center gap-2"><Calendar size={14} className="text-accent" /> {new Date(post.publishedAt).toLocaleDateString('en-ZM', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
                                                 <span className="flex items-center gap-2"><Clock size={14} className="text-accent" /> {post.readTime}</span>
                                             </div>
@@ -160,13 +160,13 @@ const JournalClient = ({ initialPosts, initialFeaturedPosts }: JournalClientProp
                                                 />
                                             )}
                                             <div className="absolute top-4 left-4">
-                                                <span className="bg-white px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest text-accent shadow-sm">
+                                                <span className="bg-white px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest text-accent shadow-sm">
                                                     {post.category}
                                                 </span>
                                             </div>
                                         </div>
                                         <div className="space-y-3">
-                                            <div className="flex items-center gap-4 text-[9px] uppercase tracking-widest text-foreground/40 font-bold">
+                                            <div className="flex items-center gap-4 text-xs uppercase tracking-widest text-foreground/40 font-bold">
                                                 <span>{new Date(post.publishedAt).toLocaleDateString('en-ZM', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
                                                 <span>•</span>
                                                 <span>{post.readTime}</span>

@@ -105,7 +105,7 @@ function CancelInner() {
 
                             <div className="bg-background rounded-xl p-6 mb-8 space-y-4">
                                 <div>
-                                    <span className="text-[10px] uppercase tracking-[2px] font-bold text-accent/60 block mb-1">
+                                    <span className="text-xs uppercase tracking-[2px] font-bold text-accent/60 block mb-1">
                                         Client
                                     </span>
                                     <span className="text-foreground font-medium text-[15px]">
@@ -114,7 +114,7 @@ function CancelInner() {
                                 </div>
                                 <div className="flex gap-6">
                                     <div>
-                                        <span className="text-[10px] uppercase tracking-[2px] font-bold text-accent/60 flex items-center gap-1.5 mb-1">
+                                        <span className="text-xs uppercase tracking-[2px] font-bold text-accent/60 flex items-center gap-1.5 mb-1">
                                             <Calendar className="w-3 h-3" /> Date
                                         </span>
                                         <span className="text-foreground font-medium text-[15px]">
@@ -122,7 +122,7 @@ function CancelInner() {
                                         </span>
                                     </div>
                                     <div>
-                                        <span className="text-[10px] uppercase tracking-[2px] font-bold text-accent/60 flex items-center gap-1.5 mb-1">
+                                        <span className="text-xs uppercase tracking-[2px] font-bold text-accent/60 flex items-center gap-1.5 mb-1">
                                             <Clock className="w-3 h-3" /> Time
                                         </span>
                                         <span className="text-foreground font-medium text-[15px]">

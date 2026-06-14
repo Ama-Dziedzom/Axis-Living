@@ -57,7 +57,7 @@ const ProjectDetailClient = ({ project, relatedProjects }: ProjectDetailClientPr
                             <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Back to Portfolio
                         </LinkNext>
                         <h1 className="text-4xl md:text-9xl font-heading text-white leading-[1.15] mb-10 tracking-wide">{project.title}</h1>
-                        <div className="flex flex-wrap items-center gap-12 text-white/70 uppercase tracking-[0.2em] text-[10px] md:text-xs">
+                        <div className="flex flex-wrap items-center gap-12 text-white/70 uppercase tracking-[0.2em] text-xs md:text-sm">
                             <div className="flex items-center gap-3"><MapPin size={18} className="text-accent" /> {project.location}</div>
                             <div className="flex items-center gap-3"><Tag size={18} className="text-accent" /> {project.style} · {project.category}</div>
                         </div>
@@ -82,7 +82,7 @@ const ProjectDetailClient = ({ project, relatedProjects }: ProjectDetailClientPr
                             <motion.div
                                 {...fadeInUpSettings}
                             >
-                                <span className="text-tan text-[10px] md:text-xs font-bold uppercase tracking-[0.4em] mb-4 block">{project.brief.heading}</span>
+                                <span className="text-tan text-xs md:text-xs font-bold uppercase tracking-[0.4em] mb-4 block">{project.brief.heading}</span>
                                 <h2 className="text-3xl md:text-5xl font-heading mb-8 font-light leading-[1.25] tracking-wide">The Story Behind the Space</h2>
                                 <p className="text-foreground/70 text-lg md:text-xl leading-relaxed max-w-2xl font-body">
                                     {project.brief.body}
@@ -94,7 +94,7 @@ const ProjectDetailClient = ({ project, relatedProjects }: ProjectDetailClientPr
                                     {...fadeInUpSettings}
                                     className="bg-accent/5 p-12 lg:p-16 border border-accent/10 rounded-sm"
                                 >
-                                    <span className="text-tan text-[10px] font-bold uppercase tracking-[0.3em] mb-4 block underline decoration-tan/30 underline-offset-8">{project.approach.heading}</span>
+                                    <span className="text-tan text-xs font-bold uppercase tracking-[0.3em] mb-4 block underline decoration-tan/30 underline-offset-8">{project.approach.heading}</span>
                                     <p className="text-foreground/80 leading-relaxed font-body">
                                         {project.approach.body}
                                     </p>
@@ -117,7 +117,7 @@ const ProjectDetailClient = ({ project, relatedProjects }: ProjectDetailClientPr
                             <motion.div
                                 {...fadeInUpSettings}
                             >
-                                <span className="text-tan text-[10px] font-bold uppercase tracking-[0.3em] mb-4 block">{project.result.heading}</span>
+                                <span className="text-tan text-xs font-bold uppercase tracking-[0.3em] mb-4 block">{project.result.heading}</span>
                                 <h3 className="text-3xl md:text-4xl font-heading mb-6 tracking-wide leading-[1.2]">The Final Outcome</h3>
                                 <p className="text-foreground/70 text-lg md:text-xl leading-relaxed max-w-2xl font-body mb-10">
                                     {project.result.body}
@@ -158,7 +158,7 @@ const ProjectDetailClient = ({ project, relatedProjects }: ProjectDetailClientPr
                 <div className="max-w-[1400px] mx-auto px-6 lg:px-24">
                     <div className="flex items-center justify-between mb-16">
                         <span className="text-white/30 text-xs font-bold uppercase tracking-widest">Gallery Spread</span>
-                        <span className="text-white/20 text-[10px] uppercase tracking-widest">
+                        <span className="text-white/20 text-xs uppercase tracking-widest">
                             {currentSpread + 1} / {totalSpreads}
                         </span>
                     </div>
@@ -178,7 +178,7 @@ const ProjectDetailClient = ({ project, relatedProjects }: ProjectDetailClientPr
                                     <div className="md:col-span-7 h-[400px] md:h-[700px] relative overflow-hidden group">
                                         {project.gallery[0] && <Image src={project.gallery[0]!} alt="Gallery 1" fill className="object-cover transition-transform duration-[1.5s] group-hover:scale-105" />}
                                         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-6 md:p-8">
-                                            <p className="text-white/60 text-[8px] md:text-[10px] uppercase tracking-widest font-bold">{project.category}</p>
+                                            <p className="text-white/60 text-xs uppercase tracking-widest font-bold">{project.category}</p>
                                             <p className="text-white text-base md:text-lg font-heading mt-1">{project.title}</p>
                                         </div>
                                     </div>
@@ -213,7 +213,7 @@ const ProjectDetailClient = ({ project, relatedProjects }: ProjectDetailClientPr
                                     <div className="h-[400px] md:h-full relative overflow-hidden group">
                                         {(project.gallery[4] || project.gallery[3]) && <Image src={(project.gallery[4] || project.gallery[3])!} alt="Gallery 5" fill className="object-cover transition-transform duration-[1.5s] group-hover:scale-105" />}
                                         <div className="absolute top-6 right-6 bg-white/10 backdrop-blur-md px-4 py-2 rounded-full">
-                                            <p className="text-white text-[10px] uppercase tracking-widest font-bold">{project.style}</p>
+                                            <p className="text-white text-xs uppercase tracking-widest font-bold">{project.style}</p>
                                         </div>
                                     </div>
                                 </motion.div>
@@ -232,7 +232,7 @@ const ProjectDetailClient = ({ project, relatedProjects }: ProjectDetailClientPr
                                         {project.gallery[5] && <Image src={project.gallery[5]!} alt="Gallery 6" fill className="object-cover grayscale group-hover:grayscale-0 transition-all duration-700" />}
                                     </div>
                                     <div className="md:col-span-7 flex flex-col justify-center p-6 md:p-16">
-                                        <p className="text-white/20 text-[10px] uppercase tracking-widest font-bold mb-6 md:mb-8">The Space</p>
+                                        <p className="text-white/20 text-xs uppercase tracking-widest font-bold mb-6 md:mb-8">The Space</p>
                                         <p className="text-white text-2xl md:text-5xl font-heading leading-[1.3] mb-8">
                                             {project.location}
                                         </p>
@@ -310,10 +310,10 @@ const ProjectDetailClient = ({ project, relatedProjects }: ProjectDetailClientPr
                                     {p.coverImage && <Image src={p.coverImage} alt={p.title} fill className="object-cover transition-transform duration-1000 group-hover:scale-110" />}
                                     <div className="absolute inset-0 bg-accent/90 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500 text-center p-4">
                                         <h6 className="text-white text-xl md:text-2xl font-heading mb-2 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-500">{p.title}</h6>
-                                        <span className="text-white border-b border-white text-[10px] font-bold tracking-widest uppercase pb-1 opacity-0 group-hover:opacity-100 transition-opacity duration-700 delay-100">View Project</span>
+                                        <span className="text-white border-b border-white text-xs font-bold tracking-widest uppercase pb-1 opacity-0 group-hover:opacity-100 transition-opacity duration-700 delay-100">View Project</span>
                                     </div>
                                 </div>
-                                <span className="text-foreground/40 text-[10px] tracking-widest uppercase mt-3">{p.location}</span>
+                                <span className="text-foreground/40 text-xs tracking-widest uppercase mt-3">{p.location}</span>
                             </LinkNext>
                         ))}
                     </div>

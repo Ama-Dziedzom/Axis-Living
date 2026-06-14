@@ -40,7 +40,7 @@ const PostDetailClient = ({ post, relatedPosts }: PostDetailClientProps) => {
                             href="/booking"
                             className="flex items-center gap-3 bg-accent text-white px-6 py-4 rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-all group"
                         >
-                            <span className="text-[10px] font-bold uppercase tracking-widest hidden md:inline">Book a Consultation</span>
+                            <span className="text-xs font-bold uppercase tracking-widest hidden md:inline">Book a Consultation</span>
                             <MessageCircle size={20} />
                         </Link>
                     </motion.div>
@@ -63,7 +63,7 @@ const PostDetailClient = ({ post, relatedPosts }: PostDetailClientProps) => {
                         <motion.div
                             initial={{ opacity: 0, y: 30 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="bg-accent/90 backdrop-blur-md text-white text-[10px] font-bold uppercase tracking-[0.3em] px-4 py-2 w-fit mb-8"
+                            className="bg-accent/90 backdrop-blur-md text-white text-xs font-bold uppercase tracking-[0.3em] px-4 py-2 w-fit mb-8"
                         >
                             {post.category}
                         </motion.div>
@@ -80,7 +80,7 @@ const PostDetailClient = ({ post, relatedPosts }: PostDetailClientProps) => {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.4 }}
-                            className="flex flex-wrap items-center gap-8 md:gap-12 text-[10px] uppercase tracking-widest text-white/80 font-bold border-t border-white/20 pt-8"
+                            className="flex flex-wrap items-center gap-8 md:gap-12 text-xs uppercase tracking-widest text-white/80 font-bold border-t border-white/20 pt-8"
                         >
                             <span className="flex items-center gap-3"><Calendar size={16} className="text-white" /> {new Date(post.publishedAt).toLocaleDateString('en-ZM', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
                             <span className="flex items-center gap-3"><Clock size={16} className="text-white" /> {post.readTime}</span>
@@ -97,7 +97,7 @@ const PostDetailClient = ({ post, relatedPosts }: PostDetailClientProps) => {
                         <div className="flex-1">
                             <Link
                                 href="/journal"
-                                className="inline-flex items-center gap-3 text-accent text-[10px] font-bold uppercase tracking-widest mb-16 hover:gap-5 transition-all"
+                                className="inline-flex items-center gap-3 text-accent text-xs font-bold uppercase tracking-widest mb-16 hover:gap-5 transition-all"
                             >
                                 <ArrowLeft size={16} /> Back to Journal
                             </Link>
@@ -140,7 +140,7 @@ const PostDetailClient = ({ post, relatedPosts }: PostDetailClientProps) => {
                                                 </h3>
                                                 <Link
                                                     href={block.buttonLink || "/booking"}
-                                                    className="inline-block bg-white text-accent px-10 py-4 rounded-full text-[11px] font-bold uppercase tracking-[0.2em] shadow-xl hover:bg-white/90 hover:-translate-y-1 transition-all"
+                                                    className="inline-block bg-white text-accent px-10 py-4 rounded-full text-xs font-bold uppercase tracking-[0.2em] shadow-xl hover:bg-white/90 hover:-translate-y-1 transition-all"
                                                 >
                                                     {block.buttonText}
                                                 </Link>
@@ -153,10 +153,10 @@ const PostDetailClient = ({ post, relatedPosts }: PostDetailClientProps) => {
 
                             {/* TAGS */}
                             <div className="mt-20 pt-12 border-t border-foreground/10 space-y-6">
-                                <p className="text-[10px] uppercase tracking-widest text-foreground/40 font-bold">Topics Covered</p>
+                                <p className="text-xs uppercase tracking-widest text-foreground/40 font-bold">Topics Covered</p>
                                 <div className="flex flex-wrap gap-3">
                                     {post.tags.map(tag => (
-                                        <span key={tag} className="text-[10px] uppercase font-bold tracking-widest px-4 py-2 bg-foreground/5 text-foreground/60 border border-foreground/10 rounded-full">
+                                        <span key={tag} className="text-xs uppercase font-bold tracking-widest px-4 py-2 bg-foreground/5 text-foreground/60 border border-foreground/10 rounded-full">
                                             #{tag}
                                         </span>
                                     ))}
@@ -171,7 +171,7 @@ const PostDetailClient = ({ post, relatedPosts }: PostDetailClientProps) => {
             <section className="py-32 bg-foreground/5 border-t border-foreground/10 px-6 overflow-hidden">
                 <div className="max-w-7xl mx-auto">
                     <header className="mb-20">
-                        <p className="text-accent text-[10px] font-bold uppercase tracking-[0.4em] mb-4">You might also like</p>
+                        <p className="text-accent text-xs font-bold uppercase tracking-[0.4em] mb-4">You might also like</p>
                         <h2 className="text-4xl md:text-6xl font-heading">Related <span className="italic font-light opacity-30">Reading</span></h2>
                     </header>
 
@@ -197,7 +197,7 @@ const PostDetailClient = ({ post, relatedPosts }: PostDetailClientProps) => {
                                     <p className="text-foreground/50 text-sm line-clamp-2 leading-relaxed mb-8">
                                         {rPost.excerpt}
                                     </p>
-                                    <div className="flex items-center justify-between text-[10px] uppercase tracking-widest font-bold border-t border-foreground/5 pt-6">
+                                    <div className="flex items-center justify-between text-xs uppercase tracking-widest font-bold border-t border-foreground/5 pt-6">
                                         <span className="text-foreground/40">{rPost.category}</span>
                                         <span className="text-accent group-hover:underline underline-offset-4">Read Article</span>
                                     </div>

@@ -225,7 +225,7 @@ export default function HomeClient({ featuredProjects, featuredPosts, siteSettin
                     transition={{ delay: 1.5, duration: 1 }}
                     className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center text-white/50"
                 >
-                    <span className="text-[10px] uppercase tracking-[0.3em] mb-4">Discover More</span>
+                    <span className="text-xs uppercase tracking-[0.3em] mb-4">Discover More</span>
                     <div className="w-[1px] h-16 bg-white/20 relative">
                         <motion.div
                             animate={{ top: ["0%", "100%"] }}
@@ -457,7 +457,7 @@ export default function HomeClient({ featuredProjects, featuredPosts, siteSettin
                                         className="object-cover transition-transform duration-1000 group-hover:scale-110"
                                     />
                                     <div className="absolute top-4 left-4">
-                                        <span className="bg-white/90 backdrop-blur-md text-accent text-[8px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full shadow-sm">
+                                        <span className="bg-white/90 backdrop-blur-md text-accent text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded-full shadow-sm">
                                             {post.category}
                                         </span>
                                     </div>

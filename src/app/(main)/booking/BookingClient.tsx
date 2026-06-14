@@ -6,7 +6,6 @@ import {
     Calendar,
     Mail,
     Clock,
-    ShieldCheck,
     ChevronLeft,
     ChevronRight,
     ChevronDown,
@@ -23,6 +22,7 @@ import {
     MapPin,
     Video,
 } from "lucide-react";
+import { Clock01Icon, Calendar01Icon, SecurityCheckIcon } from "hugeicons-react";
 
 // ───── Currency Config ─────
 const CURRENCIES = [
@@ -485,7 +485,7 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
                 {/* What to prepare */}
                 <div className="w-full mb-12 text-center">
                     <p className="text-foreground/50 text-sm italic font-body">
-                        <span className="font-bold not-italic text-[10px] uppercase tracking-widest text-accent block mb-3">
+                        <span className="font-bold not-italic text-xs uppercase tracking-widest text-accent block mb-3">
                             What to prepare
                         </span>
                         Have a rough idea of your space (photos help!), your timeline, and your
@@ -496,29 +496,29 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
                 {/* Feature cards */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20 w-full border-y border-foreground/5 py-12">
                     <div className="flex flex-col items-center text-center p-6 bg-accent text-white shadow-xl rounded-sm">
-                        <Clock className="text-white/70 mb-4" size={32} />
-                        <p className="text-[10px] uppercase font-bold tracking-widest mb-2 font-heading">
+                        <Clock01Icon className="text-white/70 mb-4" size={44} />
+                        <p className="text-sm uppercase font-bold tracking-widest mb-2 font-heading">
                             30-Minute Call
                         </p>
-                        <p className="text-xs opacity-70">
+                        <p className="text-sm opacity-70">
                             Efficient exploration of your project goals.
                         </p>
                     </div>
                     <div className="flex flex-col items-center text-center p-6 bg-accent text-white shadow-xl rounded-sm">
-                        <Calendar className="text-white/70 mb-4" size={32} />
-                        <p className="text-[10px] uppercase font-bold tracking-widest mb-2 font-heading">
+                        <Calendar01Icon className="text-white/70 mb-4" size={44} />
+                        <p className="text-sm uppercase font-bold tracking-widest mb-2 font-heading">
                             Self-Scheduling
                         </p>
-                        <p className="text-xs opacity-70">
+                        <p className="text-sm opacity-70">
                             Choose a time that fits your own busy calendar.
                         </p>
                     </div>
                     <div className="flex flex-col items-center text-center p-6 bg-accent text-white shadow-xl rounded-sm">
-                        <ShieldCheck className="text-white/70 mb-4" size={32} />
-                        <p className="text-[10px] uppercase font-bold tracking-widest mb-2 font-heading">
+                        <SecurityCheckIcon className="text-white/70 mb-4" size={44} />
+                        <p className="text-sm uppercase font-bold tracking-widest mb-2 font-heading">
                             No Obligation
                         </p>
-                        <p className="text-xs opacity-70">
+                        <p className="text-sm opacity-70">
                             A discovery phase before any formal commitment.
                         </p>
                     </div>
@@ -529,11 +529,11 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
                     {/* Widget header with progress */}
                     <div className="p-6 border-b border-white/10 bg-accent">
                         <div className="flex items-center justify-between mb-4">
-                            <span className="text-white text-[10px] uppercase tracking-[0.3em] font-bold">
+                            <span className="text-white text-xs uppercase tracking-[0.3em] font-bold">
                                 Secure Booking Portal
                             </span>
                             {step !== "confirmed" && (
-                                <span className="text-white/70 text-[10px] uppercase tracking-[0.2em]">
+                                <span className="text-white/70 text-xs uppercase tracking-[0.2em]">
                                     Step{" "}
                                     {step === "date" ? "1" : step === "time" ? "2" : step === "details" ? "3" : "4"} of 4
                                 </span>
@@ -574,7 +574,7 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
                                     transition={{ duration: 0.35 }}
                                     className="p-8 md:p-12"
                                 >
-                                    <p className="text-center text-foreground/40 text-[10px] uppercase tracking-[0.3em] font-bold mb-8">
+                                    <p className="text-center text-foreground/40 text-xs uppercase tracking-[0.3em] font-bold mb-8">
                                         Select a Date
                                     </p>
 
@@ -605,7 +605,7 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
                                         {DAY_LABELS.map((d) => (
                                             <div
                                                 key={d}
-                                                className="text-center text-[10px] uppercase tracking-widest text-foreground/30 font-bold py-2"
+                                                className="text-center text-xs uppercase tracking-widest text-foreground/30 font-bold py-2"
                                             >
                                                 {d}
                                             </div>
@@ -661,7 +661,7 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
                                     </div>
 
                                     {/* Legend */}
-                                    <div className="flex items-center justify-center gap-6 mt-8 text-[10px] uppercase tracking-widest text-foreground/30">
+                                    <div className="flex items-center justify-center gap-6 mt-8 text-xs uppercase tracking-widest text-foreground/30">
                                         <div className="flex items-center gap-2">
                                             <span className="w-3 h-3 rounded-sm bg-accent/10 ring-1 ring-accent/30" />
                                             Today
@@ -696,7 +696,7 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
                                         Change date
                                     </button>
 
-                                    <p className="text-center text-foreground/40 text-[10px] uppercase tracking-[0.3em] font-bold mb-2">
+                                    <p className="text-center text-foreground/40 text-xs uppercase tracking-[0.3em] font-bold mb-2">
                                         Available Times
                                     </p>
                                     <p className="text-center text-xl font-heading mb-10">
@@ -729,7 +729,7 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
                                         })}
                                     </div>
 
-                                    <p className="text-center text-foreground/60 text-[10px] mt-6 italic">
+                                    <p className="text-center text-foreground/60 text-xs mt-6 italic">
                                         All times are in Central Africa Time (CAT)
                                     </p>
                                 </motion.div>
@@ -755,7 +755,7 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
 
                                     {/* Selected date/time summary */}
                                     <div className="flex flex-col items-center mb-10">
-                                        <p className="text-foreground/40 text-[10px] uppercase tracking-[0.3em] font-bold mb-3">
+                                        <p className="text-foreground/40 text-xs uppercase tracking-[0.3em] font-bold mb-3">
                                             Your Appointment
                                         </p>
                                         <div className="flex items-center gap-4 bg-accent/5 px-6 py-3 rounded-full">
@@ -833,7 +833,7 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
 
                                         {/* Consultation Type */}
                                         <div>
-                                            <p className="text-[10px] uppercase tracking-widest text-foreground/40 font-bold mb-3">
+                                            <p className="text-xs uppercase tracking-widest text-foreground/40 font-bold mb-3">
                                                 Consultation Type
                                             </p>
                                             <div className="grid grid-cols-2 gap-3">
@@ -853,7 +853,7 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
                                                     >
                                                         <Icon size={22} />
                                                         <span className="text-xs font-bold tracking-wider uppercase">{label}</span>
-                                                        <span className={`text-[10px] leading-tight text-center ${formData.consultationType === value ? "opacity-70" : "opacity-50"}`}>{sub}</span>
+                                                        <span className={`text-xs leading-tight text-center ${formData.consultationType === value ? "opacity-70" : "opacity-50"}`}>{sub}</span>
                                                     </button>
                                                 ))}
                                             </div>
@@ -917,7 +917,7 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
 
                                         {/* Consultation Fee */}
                                         <div>
-                                            <p className="text-[10px] uppercase tracking-widest text-foreground/40 font-bold mb-3">
+                                            <p className="text-xs uppercase tracking-widest text-foreground/40 font-bold mb-3">
                                                 Consultation Fee
                                             </p>
                                             <div className="flex rounded-sm overflow-hidden border border-foreground/10">
@@ -977,7 +977,7 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
                                             )}
                                         </motion.button>
 
-                                        <p className="text-center text-foreground/40 text-[10px] mt-2">
+                                        <p className="text-center text-foreground/40 text-xs mt-2">
                                             Secure payment via Flutterwave. Your slot is reserved once payment is complete.
                                         </p>
                                     </form>
@@ -1007,7 +1007,7 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
                                                     : <CreditCard size={32} className="text-accent" />
                                                 }
                                             </motion.div>
-                                            <p className="text-foreground/40 text-[10px] uppercase tracking-[0.3em] font-bold mb-3">
+                                            <p className="text-foreground/40 text-xs uppercase tracking-[0.3em] font-bold mb-3">
                                                 {paymentStatus === "initiating" ? "Processing..." : "Waiting for approval"}
                                             </p>
                                             <p className="text-xl font-heading mb-4">
@@ -1046,7 +1046,7 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
                                             {process.env.NEXT_PUBLIC_FLUTTERWAVE_SANDBOX === 'true' && paymentReference && (
                                                 <button
                                                     onClick={() => confirmBooking(paymentReference)}
-                                                    className="text-[10px] uppercase tracking-widest text-foreground/30 border border-dashed border-foreground/20 px-4 py-2 rounded-full hover:text-accent hover:border-accent transition-colors"
+                                                    className="text-xs uppercase tracking-widest text-foreground/30 border border-dashed border-foreground/20 px-4 py-2 rounded-full hover:text-accent hover:border-accent transition-colors"
                                                 >
                                                     Simulate Success (Sandbox Only)
                                                 </button>
@@ -1075,7 +1075,7 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
                                         /* ── PIN entry ── */
                                         <div className="flex flex-col items-center justify-center py-8 text-center max-w-sm mx-auto">
                                             <Lock size={32} className="text-accent mb-6" />
-                                            <p className="text-foreground/40 text-[10px] uppercase tracking-[0.3em] font-bold mb-2">Card PIN Required</p>
+                                            <p className="text-foreground/40 text-xs uppercase tracking-[0.3em] font-bold mb-2">Card PIN Required</p>
                                             <p className="text-xl font-heading mb-8">Enter your card PIN</p>
                                             <input
                                                 type="password"
@@ -1101,7 +1101,7 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
                                         /* ── OTP entry ── */
                                         <div className="flex flex-col items-center justify-center py-8 text-center max-w-sm mx-auto">
                                             <Mail size={32} className="text-accent mb-6" />
-                                            <p className="text-foreground/40 text-[10px] uppercase tracking-[0.3em] font-bold mb-2">OTP Verification</p>
+                                            <p className="text-foreground/40 text-xs uppercase tracking-[0.3em] font-bold mb-2">OTP Verification</p>
                                             <p className="text-xl font-heading mb-3">Enter the OTP sent to you</p>
                                             <p className="text-foreground/40 text-sm mb-8">Check your phone or email for a one-time code from your bank.</p>
                                             <input
@@ -1135,7 +1135,7 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
                                                 Back to details
                                             </button>
 
-                                            <p className="text-center text-foreground/40 text-[10px] uppercase tracking-[0.3em] font-bold mb-2">
+                                            <p className="text-center text-foreground/40 text-xs uppercase tracking-[0.3em] font-bold mb-2">
                                                 Payment
                                             </p>
                                             <p className="text-center text-3xl font-heading mb-8">
@@ -1172,7 +1172,7 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
                                                     </button>
                                                 </div>
                                                 {currency.code !== "ZMW" && paymentMethod === "card" && (
-                                                    <p className="text-center text-foreground/30 text-[10px] mt-2">
+                                                    <p className="text-center text-foreground/30 text-xs mt-2">
                                                         Mobile Money is only available for ZMW payments
                                                     </p>
                                                 )}
@@ -1182,7 +1182,7 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
                                             {paymentMethod === "mobile_money" && (
                                                 <div className="max-w-sm mx-auto space-y-5">
                                                     <div>
-                                                        <p className="text-[10px] uppercase tracking-widest text-foreground/40 font-bold mb-3">Network</p>
+                                                        <p className="text-xs uppercase tracking-widest text-foreground/40 font-bold mb-3">Network</p>
                                                         <div className="flex rounded-sm overflow-hidden border border-foreground/10">
                                                             {MOBILE_NETWORKS.map((n) => (
                                                                 <button
@@ -1199,7 +1199,7 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
                                                                 </button>
                                                             ))}
                                                         </div>
-                                                        <p className="text-center text-foreground/30 text-[10px] mt-2">
+                                                        <p className="text-center text-foreground/30 text-xs mt-2">
                                                             {MOBILE_NETWORKS.find(n => n.code === mobileNetwork)?.label}
                                                         </p>
                                                     </div>
@@ -1224,7 +1224,7 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
                                                         Pay {currency.symbol}{currency.amount.toLocaleString()}
                                                         <ArrowRight size={16} />
                                                     </motion.button>
-                                                    <p className="text-center text-foreground/30 text-[10px]">
+                                                    <p className="text-center text-foreground/30 text-xs">
                                                         A payment prompt will be sent to your phone. Enter your PIN to confirm.
                                                     </p>
                                                 </div>
@@ -1297,7 +1297,7 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
                                                         Pay {currency.symbol}{currency.amount.toLocaleString()}
                                                         <Lock size={14} />
                                                     </motion.button>
-                                                    <p className="text-center text-foreground/30 text-[10px] flex items-center justify-center gap-1">
+                                                    <p className="text-center text-foreground/30 text-xs flex items-center justify-center gap-1">
                                                         <Lock size={10} /> Encrypted &amp; secured by Flutterwave
                                                     </p>
                                                 </div>
@@ -1424,7 +1424,7 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
                 {/* FAQ Section */}
                 <section className="w-full mt-32 max-w-4xl mx-auto px-4 md:px-0">
                     <header className="text-center mb-16">
-                        <span className="text-accent text-[10px] font-bold uppercase tracking-[0.4em] mb-4 block">Common Queries</span>
+                        <span className="text-accent text-xs font-bold uppercase tracking-[0.4em] mb-4 block">Common Queries</span>
                         <h2 className="text-3xl md:text-5xl font-heading tracking-wide">Frequently Asked <span className="italic font-light">Questions</span></h2>
                     </header>
 
