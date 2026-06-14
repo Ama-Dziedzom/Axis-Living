@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     Calendar,
@@ -140,6 +140,7 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
     const [chargeId, setChargeId] = useState<string | null>(null);
     const [paymentReference, setPaymentReference] = useState<string | null>(null);
     const [paymentStatus, setPaymentStatus] = useState<"idle" | "initiating" | "pending" | "failed">("idle");
+    const pollCancelledRef = useRef(false);
 
     // Mobile money
     const [mobileNetwork, setMobileNetwork] = useState<NetworkCode>("AIRTEL");
@@ -259,17 +260,19 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
     };
 
     const pollForPayment = (cId: string, reference: string) => {
+        pollCancelledRef.current = false;
         let attempts = 0;
         const maxAttempts = 24; // 2 minutes at 5s intervals
 
         const poll = async () => {
+            if (pollCancelledRef.current) return;
             attempts++;
             try {
                 const res = await fetch(`/api/payment/verify?charge_id=${cId}`);
                 const result = await res.json();
 
                 if (result.status === "succeeded") {
-                    await confirmBooking(reference);
+                    if (!pollCancelledRef.current) await confirmBooking(reference);
                     return;
                 }
 
@@ -397,6 +400,7 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
     };
 
     const confirmBooking = async (reference: string) => {
+        pollCancelledRef.current = true;
         setIsSubmitting(true);
         try {
             const res = await fetch('/api/book', {
