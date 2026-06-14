@@ -9,8 +9,8 @@ export const metadata: Metadata = {
     },
     description: 'Spaces designed for the way you live. We create interiors that are as intentional as they are beautiful, tailored to your life, not a trend. Lusaka-based interior design studio.',
     icons: {
-        icon: '/favicon.jpeg',
-        apple: '/apple-touch-icon.png',
+        icon: [{ url: '/favicon.jpeg', type: 'image/jpeg' }],
+        apple: [{ url: '/favicon.jpeg', type: 'image/jpeg' }],
     },
 }
 
