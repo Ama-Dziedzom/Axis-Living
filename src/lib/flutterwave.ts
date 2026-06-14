@@ -1,6 +1,6 @@
 const BASE_URL = process.env.FLUTTERWAVE_SANDBOX === 'false'
-    ? 'https://api.flutterwave.com'
-    : 'https://developersandbox-api.flutterwave.com';
+    ? 'https://api.flutterwave.com/v4'
+    : 'https://developersandbox-api.flutterwave.com/v4';
 
 const IDP_URL = 'https://idp.flutterwave.com/realms/flutterwave/protocol/openid-connect/token';
 
