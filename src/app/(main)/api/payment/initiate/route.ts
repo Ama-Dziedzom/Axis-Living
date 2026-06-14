@@ -28,9 +28,10 @@ export async function POST(req: Request) {
             status: charge.data?.status,
         });
     } catch (error) {
-        console.error('Payment initiation error:', error);
+        const msg = error instanceof Error ? error.message : String(error);
+        console.error('Payment initiation error:', msg);
         return NextResponse.json(
-            { success: false, message: error instanceof Error ? error.message : 'Failed to initiate payment' },
+            { success: false, message: msg, debug: { sandbox: process.env.FLUTTERWAVE_SANDBOX, hasClientId: !!process.env.FLUTTERWAVE_CLIENT_ID, hasClientSecret: !!process.env.FLUTTERWAVE_CLIENT_SECRET } },
             { status: 500 },
         );
     }
