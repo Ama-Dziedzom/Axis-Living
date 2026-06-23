@@ -62,7 +62,7 @@ export async function createToken(params: {
     <BackURL>${params.backUrl}</BackURL>
     <CompanyRefUnique>0</CompanyRefUnique>
     <PTL>60</PTL>
-    <customerCountry>ZMW</customerCountry>
+    <customerCountry>ZM</customerCountry>
     ${optionalFields}
   </Transaction>
   <Services>
