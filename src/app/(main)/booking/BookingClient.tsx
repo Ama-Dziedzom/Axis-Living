@@ -12,11 +12,9 @@ import {
     User,
     Phone,
     MessageSquare,
-    CheckCircle2,
     ArrowRight,
     ArrowLeft,
     Sparkles,
-    CreditCard,
     MapPin,
     Video,
 } from "lucide-react";
@@ -84,7 +82,7 @@ function getBookedSlots(date: Date): string[] {
 }
 
 // ───── Types ─────
-type BookingStep = "date" | "time" | "details" | "confirmed";
+type BookingStep = "date" | "time" | "details";
 
 interface BookingFormData {
     name: string;
@@ -94,22 +92,6 @@ interface BookingFormData {
     message: string;
     consultationType: "walk-in" | "online" | "";
 }
-
-interface PendingBooking {
-    name: string;
-    email: string;
-    phone: string;
-    date: string;
-    dateISO: string;
-    time: string;
-    projectType: string;
-    consultationType: string;
-    message: string;
-    currency: CurrencyConfig;
-    reference: string;
-}
-
-const STORAGE_KEY = "dpo_pending_booking";
 
 // ───── Component ─────
 interface BookingClientProps {
@@ -138,7 +120,6 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
     const [currency, setCurrency] = useState<CurrencyConfig>(CURRENCIES[0]);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [mounted, setMounted] = useState(false);
-    const [paymentStatus, setPaymentStatus] = useState<"idle" | "verifying" | "failed">("idle");
 
     // Calendar data
     const daysInMonth = useMemo(() => getDaysInMonth(currentYear, currentMonth), [currentYear, currentMonth]);
@@ -156,78 +137,7 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
 
     useEffect(() => {
         setMounted(true);
-
-        // Handle return from DPO hosted checkout
-        const params = new URLSearchParams(window.location.search);
-        const token = params.get("TransactionToken");
-        if (!token) return;
-
-        const raw = sessionStorage.getItem(STORAGE_KEY);
-        if (!raw) {
-            window.history.replaceState({}, "", "/booking");
-            return;
-        }
-
-        const pending: PendingBooking = JSON.parse(raw);
-
-        // Restore UI state so the confirmation screen has the right data
-        setFormData({
-            name: pending.name,
-            email: pending.email,
-            phone: pending.phone,
-            projectType: pending.projectType,
-            message: pending.message,
-            consultationType: pending.consultationType as "walk-in" | "online" | "",
-        });
-        setSelectedDate(new Date(pending.dateISO));
-        setSelectedTime(pending.time);
-        setCurrency(pending.currency);
-        setPaymentStatus("verifying");
-
-        verifyAndConfirm(token, pending);
-    }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-    async function verifyAndConfirm(token: string, pending: PendingBooking) {
-        try {
-            const verifyRes = await fetch(`/api/payment/verify?token=${token}`);
-            const { status } = await verifyRes.json();
-
-            if (status !== "succeeded") {
-                setPaymentStatus("failed");
-                return;
-            }
-
-            const bookRes = await fetch("/api/book", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    name: pending.name,
-                    email: pending.email,
-                    phone: pending.phone,
-                    date: pending.date,
-                    time: pending.time,
-                    projectType: pending.projectType,
-                    consultationType: pending.consultationType,
-                    message: pending.message,
-                    currency: pending.currency.code,
-                    amount: pending.currency.amount,
-                    paymentReference: pending.reference,
-                }),
-            });
-
-            const bookResult = await bookRes.json();
-            if (bookResult.success) {
-                sessionStorage.removeItem(STORAGE_KEY);
-                window.history.replaceState({}, "", "/booking");
-                setStep("confirmed");
-                setPaymentStatus("idle");
-            } else {
-                setPaymentStatus("failed");
-            }
-        } catch {
-            setPaymentStatus("failed");
-        }
-    }
+    }, []);
 
     if (!mounted) {
         return <div className="min-h-screen bg-background pt-32 px-4 md:px-6 lg:px-24" />;
@@ -291,6 +201,11 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
                     name: formData.name,
                     email: formData.email,
                     phone: formData.phone,
+                    date: formatSelectedDate(),
+                    time: selectedTime!,
+                    projectType: formData.projectType,
+                    consultationType: formData.consultationType,
+                    message: formData.message,
                     amount: currency.amount,
                     currency: currency.code,
                 }),
@@ -299,23 +214,6 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
             const result = await res.json();
             if (!result.success) throw new Error(result.message);
 
-            // Persist booking data before leaving the page
-            const pending: PendingBooking = {
-                name: formData.name,
-                email: formData.email,
-                phone: formData.phone,
-                date: formatSelectedDate(),
-                dateISO: selectedDate!.toISOString(),
-                time: selectedTime!,
-                projectType: formData.projectType,
-                consultationType: formData.consultationType,
-                message: formData.message,
-                currency,
-                reference: result.reference,
-            };
-            sessionStorage.setItem(STORAGE_KEY, JSON.stringify(pending));
-
-            // Hand off to DPO hosted checkout
             window.location.href = result.paymentUrl;
         } catch (error) {
             console.error("Payment initiation error:", error);
@@ -330,8 +228,6 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
         setFormData({ name: "", email: "", phone: "", projectType: "", message: "", consultationType: "" });
         setNameError(null);
         setCurrency(CURRENCIES[0]);
-        setPaymentStatus("idle");
-        sessionStorage.removeItem(STORAGE_KEY);
     };
 
     const stepNumber = step === "date" ? "1" : step === "time" ? "2" : "3";
@@ -413,91 +309,26 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
                             <span className="text-white text-xs uppercase tracking-[0.3em] font-bold">
                                 Secure Booking Portal
                             </span>
-                            {step !== "confirmed" && paymentStatus === "idle" && (
-                                <span className="text-white/70 text-xs uppercase tracking-[0.2em]">
-                                    Step {stepNumber} of 3
-                                </span>
-                            )}
+                            <span className="text-white/70 text-xs uppercase tracking-[0.2em]">
+                                Step {stepNumber} of 3
+                            </span>
                         </div>
-                        {step !== "confirmed" && paymentStatus === "idle" && (
-                            <div className="w-full h-[2px] bg-white/20 rounded-full overflow-hidden">
-                                <motion.div
-                                    className="h-full bg-white rounded-full"
-                                    initial={{ width: "0%" }}
-                                    animate={{ width: progressWidth }}
-                                    transition={{ duration: 0.5, ease: "easeInOut" }}
-                                />
-                            </div>
-                        )}
+                        <div className="w-full h-[2px] bg-white/20 rounded-full overflow-hidden">
+                            <motion.div
+                                className="h-full bg-white rounded-full"
+                                initial={{ width: "0%" }}
+                                animate={{ width: progressWidth }}
+                                transition={{ duration: 0.5, ease: "easeInOut" }}
+                            />
+                        </div>
                     </div>
 
                     {/* Widget body */}
                     <div className="relative min-h-[550px]">
                         <AnimatePresence mode="wait">
 
-                            {/* ── Verifying payment (returned from DPO) ── */}
-                            {paymentStatus === "verifying" && (
-                                <motion.div
-                                    key="verifying"
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    exit={{ opacity: 0 }}
-                                    className="flex flex-col items-center justify-center py-24 text-center px-8"
-                                >
-                                    <motion.div
-                                        animate={{ scale: [1, 1.12, 1] }}
-                                        transition={{ repeat: Infinity, duration: 1.6, ease: "easeInOut" }}
-                                        className="w-20 h-20 bg-accent/10 rounded-full flex items-center justify-center mb-8"
-                                    >
-                                        <CreditCard size={32} className="text-accent" />
-                                    </motion.div>
-                                    <p className="text-foreground/40 text-xs uppercase tracking-[0.3em] font-bold mb-3">
-                                        Just a moment
-                                    </p>
-                                    <p className="text-2xl font-heading mb-4">Confirming your payment</p>
-                                    <p className="text-foreground/50 text-sm max-w-xs leading-relaxed mb-8">
-                                        We&apos;re verifying your payment with DPO Pay and securing your slot.
-                                    </p>
-                                    <div className="flex gap-1">
-                                        {[0, 1, 2].map(i => (
-                                            <motion.span
-                                                key={i}
-                                                className="w-2 h-2 bg-accent rounded-full"
-                                                animate={{ opacity: [0.3, 1, 0.3] }}
-                                                transition={{ repeat: Infinity, duration: 1.2, delay: i * 0.2 }}
-                                            />
-                                        ))}
-                                    </div>
-                                </motion.div>
-                            )}
-
-                            {/* ── Payment failed (returned from DPO) ── */}
-                            {paymentStatus === "failed" && (
-                                <motion.div
-                                    key="failed"
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    exit={{ opacity: 0 }}
-                                    className="flex flex-col items-center justify-center py-24 text-center px-8"
-                                >
-                                    <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mb-8">
-                                        <span className="text-3xl">✕</span>
-                                    </div>
-                                    <p className="text-xl font-heading mb-4">Payment not completed</p>
-                                    <p className="text-foreground/50 text-sm max-w-xs leading-relaxed mb-8">
-                                        Your payment could not be confirmed. No charge was made. Please try again.
-                                    </p>
-                                    <button
-                                        onClick={handleReset}
-                                        className="bg-accent text-white px-8 py-3 rounded-full text-xs font-bold tracking-[0.2em] uppercase hover:shadow-lg transition-shadow"
-                                    >
-                                        Try Again
-                                    </button>
-                                </motion.div>
-                            )}
-
                             {/* ─── STEP 1: Calendar ─── */}
-                            {paymentStatus === "idle" && step === "date" && (
+                            {step === "date" && (
                                 <motion.div
                                     key="date"
                                     initial={{ opacity: 0, x: 30 }}
@@ -595,7 +426,7 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
                             )}
 
                             {/* ─── STEP 2: Time Slots ─── */}
-                            {paymentStatus === "idle" && step === "time" && (
+                            {step === "time" && (
                                 <motion.div
                                     key="time"
                                     initial={{ opacity: 0, x: 30 }}
@@ -651,7 +482,7 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
                             )}
 
                             {/* ─── STEP 3: Details + Pay ─── */}
-                            {paymentStatus === "idle" && step === "details" && (
+                            {step === "details" && (
                                 <motion.div
                                     key="details"
                                     initial={{ opacity: 0, x: 30 }}
@@ -849,107 +680,18 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
                                 </motion.div>
                             )}
 
-                            {/* ─── CONFIRMED ─── */}
-                            {step === "confirmed" && (
-                                <motion.div
-                                    key="confirmed"
-                                    initial={{ opacity: 0, scale: 0.95 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    transition={{ duration: 0.5 }}
-                                    className="p-12 md:p-20 flex flex-col items-center text-center"
-                                >
-                                    <motion.div
-                                        initial={{ scale: 0 }}
-                                        animate={{ scale: 1 }}
-                                        transition={{ type: "spring", stiffness: 200, delay: 0.2 }}
-                                        className="mb-8"
-                                    >
-                                        <div className="w-20 h-20 bg-accent/10 rounded-full flex items-center justify-center">
-                                            <CheckCircle2 size={40} className="text-accent" />
-                                        </div>
-                                    </motion.div>
-
-                                    <motion.h2
-                                        initial={{ opacity: 0, y: 20 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: 0.4 }}
-                                        className="text-4xl md:text-5xl font-heading mb-6"
-                                    >
-                                        You&apos;re <span className="italic font-light">Booked!</span>
-                                    </motion.h2>
-
-                                    <motion.div
-                                        initial={{ opacity: 0, y: 20 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: 0.6 }}
-                                        className="bg-background rounded-sm p-6 mb-8 inline-flex flex-col items-center gap-2"
-                                    >
-                                        <div className="flex items-center gap-3 text-sm">
-                                            <Calendar size={16} className="text-accent" />
-                                            <span className="font-medium">{formatSelectedDate()}</span>
-                                        </div>
-                                        <div className="flex items-center gap-3 text-sm">
-                                            <Clock size={16} className="text-accent" />
-                                            <span className="font-medium">{selectedTime}</span>
-                                        </div>
-                                        <div className="flex items-center gap-3 text-sm mt-1">
-                                            <User size={16} className="text-accent" />
-                                            <span className="font-medium">{formData.name}</span>
-                                        </div>
-                                        {formData.consultationType && (
-                                            <div className="flex items-center gap-3 text-sm mt-1">
-                                                {formData.consultationType === "walk-in"
-                                                    ? <MapPin size={16} className="text-accent" />
-                                                    : <Video size={16} className="text-accent" />
-                                                }
-                                                <span className="font-medium capitalize">
-                                                    {formData.consultationType === "walk-in" ? "Walk-in (In-person)" : "Online (Video call)"}
-                                                </span>
-                                            </div>
-                                        )}
-                                    </motion.div>
-
-                                    <motion.p
-                                        initial={{ opacity: 0 }}
-                                        animate={{ opacity: 1 }}
-                                        transition={{ delay: 0.8 }}
-                                        className="max-w-md text-foreground/50 text-sm leading-relaxed mb-10"
-                                    >
-                                        Check your inbox at{" "}
-                                        <span className="text-accent font-medium">{formData.email}</span>{" "}
-                                        for a confirmation.{" "}
-                                        {formData.consultationType === "online"
-                                            ? "We'll send over a meeting link — looking forward to hearing about your space!"
-                                            : "We'll see you at the studio — looking forward to meeting you!"
-                                        }
-                                    </motion.p>
-
-                                    <motion.button
-                                        initial={{ opacity: 0 }}
-                                        animate={{ opacity: 1 }}
-                                        transition={{ delay: 1 }}
-                                        onClick={handleReset}
-                                        className="text-foreground/30 hover:text-accent text-xs uppercase tracking-widest transition-colors"
-                                    >
-                                        Book another consultation
-                                    </motion.button>
-                                </motion.div>
-                            )}
                         </AnimatePresence>
                     </div>
 
                     {/* Footer */}
-                    {step !== "confirmed" && paymentStatus === "idle" && (
-                        <div className="p-12 bg-foreground text-white text-center">
-                            <p className="text-sm opacity-60 uppercase tracking-widest mb-4 font-bold">
-                                What&apos;s Next?
-                            </p>
-                            <p className="max-w-md mx-auto italic text-lg opacity-90 leading-relaxed font-body">
-                                &ldquo;You&apos;re booked! Check your inbox for your confirmation. We&apos;re looking
-                                forward to your visit.&rdquo;
-                            </p>
-                        </div>
-                    )}
+                    <div className="p-12 bg-foreground text-white text-center">
+                        <p className="text-sm opacity-60 uppercase tracking-widest mb-4 font-bold">
+                            What&apos;s Next?
+                        </p>
+                        <p className="max-w-md mx-auto italic text-lg opacity-90 leading-relaxed font-body">
+                            &ldquo;After payment, you&apos;ll receive a confirmation email with your calendar invite.&rdquo;
+                        </p>
+                    </div>
                 </div>
 
                 {/* FAQ Section */}

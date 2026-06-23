@@ -1,5 +1,5 @@
 const API_URL = process.env.DPO_API_URL || 'https://secure.3gdirectpay.com/API/v6/';
-const PAYMENT_BASE_URL = process.env.DPO_PAYMENT_BASE_URL || 'https://secure.3gdirectpay.com/payv2.php';
+const PAYMENT_BASE_URL = process.env.DPO_PAYMENT_BASE_URL || 'https://secure.3gdirectpay.com/payv3.php';
 const COMPANY_TOKEN = process.env.DPO_COMPANY_TOKEN!;
 const SERVICE_TYPE = process.env.DPO_SERVICE_TYPE || '5525';
 
@@ -62,6 +62,7 @@ export async function createToken(params: {
     <BackURL>${params.backUrl}</BackURL>
     <CompanyRefUnique>0</CompanyRefUnique>
     <PTL>60</PTL>
+    <customerCountry>ZMW</customerCountry>
     ${optionalFields}
   </Transaction>
   <Services>
