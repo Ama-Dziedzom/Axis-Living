@@ -3,7 +3,7 @@ import JournalClient from "./JournalClient";
 import { fetchPosts, fetchFeaturedPosts } from "@/lib/data";
 
 export const metadata: Metadata = {
-    title: "Journal | Axis Living - Design Thinking & Stories",
+    title: "Journal | NOA Living Studio - Design Thinking & Stories",
     description: "Explore our collection of design thinking, project stories, and honest advice from our studio.",
 };
 

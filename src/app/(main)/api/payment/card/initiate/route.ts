@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { randomBytes } from 'crypto';
 import { createToken, getPaymentUrl } from '@/lib/dpo';
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://axisliving.co.zm';
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://noalivingstudio.co.zm';
 
 export async function POST(req: Request) {
     try {
@@ -16,7 +16,7 @@ export async function POST(req: Request) {
 
         const nameParts = name.trim().split(/\s+/);
         const firstName = nameParts[0];
-        const lastName = nameParts.slice(1).join(' ') || firstName;
+        const lastName = nameParts.slice(1).join(' ') || undefined;
 
         const { transactionToken } = await createToken({
             amount,

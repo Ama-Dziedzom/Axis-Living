@@ -68,7 +68,7 @@ export async function fetchPricing() {
 export async function fetchTestimonials() {
     return [
         {
-            quote: "Axis Living transformed our house into a home that truly reflects who we are. Their attention to detail and understanding of our lifestyle was exceptional.",
+            quote: "NOA Living Studio transformed our house into a home that truly reflects who we are. Their attention to detail and understanding of our lifestyle was exceptional.",
             clientName: "Sarah M.",
             location: "Leopard's Hill"
         },
@@ -111,7 +111,7 @@ export async function fetchHomeData() {
         },
         testimonialsSection: {
             subtitle: "Client Stories",
-            title: "Working with Axis Living was the best decision we made for our new home."
+            title: "Working with NOA Living Studio was the best decision we made for our new home."
         },
         journalSection: {
             subtitle: "From the Studio",
@@ -130,15 +130,15 @@ export async function fetchHomeData() {
 
 export async function fetchSiteSettings() {
     return {
-        studioName: "Axis Living",
+        studioName: "NOA Living Studio",
         tagline: "Bespoke Interiors",
-        email: "hello@axisliving.co.zm",
+        email: "hello@noalivingstudio.co.zm",
         phone: "+260 971 251 110",
         address: "Lusaka, Zambia",
-        headerLogo: "/axis-living.png",
-        footerLogo: "/axis-living.png",
-        instagram: "https://instagram.com/axisliving.zm",
-        pinterest: "https://pinterest.com/axisliving",
+        headerLogo: "/noa-living-studio.png",
+        footerLogo: "/noa-living-studio.png",
+        instagram: "https://instagram.com/noalivingstudio.zm",
+        pinterest: "https://pinterest.com/noalivingstudio",
     };
 }
 
@@ -152,7 +152,7 @@ export async function fetchAboutData() {
         },
         bio: {
             title: "The Vision",
-            body: "Founded on the principles of balance and beauty, Axis Living has grown into a studio known for its unique ability to blend contemporary luxury with African heritage.",
+            body: "Founded on the principles of balance and beauty, NOA Living Studio has grown into a studio known for its unique ability to blend contemporary luxury with African heritage.",
             image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=800&q=80"
         },
         studioImages: [

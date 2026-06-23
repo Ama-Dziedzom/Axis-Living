@@ -7,21 +7,21 @@ function generateICS(name: string, email: string, date: string, time: string, me
     const dateObj = new Date(`${date} ${time}`);
     const endObj = new Date(dateObj.getTime() + 30 * 60 * 1000);
     const fmt = (d: Date) => d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-    const uid = `${Date.now()}-${email.replace('@', '-at-')}@axisliving.co.zm`;
+    const uid = `${Date.now()}-${email.replace('@', '-at-')}@noalivingstudio.co.zm`;
     return [
         'BEGIN:VCALENDAR',
         'VERSION:2.0',
-        'PRODID:-//Axis Living//Booking//EN',
+        'PRODID:-//NOA Living Studio//Booking//EN',
         'CALSCALE:GREGORIAN',
         'METHOD:REQUEST',
         'BEGIN:VEVENT',
         `UID:${uid}`,
         `DTSTART:${fmt(dateObj)}`,
         `DTEND:${fmt(endObj)}`,
-        'SUMMARY:Discovery Call — Axis Living',
-        `DESCRIPTION:Your discovery consultation with Axis Living.\\nJoin here: ${meetingLink}`,
+        'SUMMARY:Discovery Call — NOA Living Studio',
+        `DESCRIPTION:Your discovery consultation with NOA Living Studio.\\nJoin here: ${meetingLink}`,
         `LOCATION:${meetingLink}`,
-        `ORGANIZER;CN=Axis Living:mailto:${process.env.RESEND_FROM_EMAIL || 'hello@axisliving.co.zm'}`,
+        `ORGANIZER;CN=NOA Living Studio:mailto:${process.env.RESEND_FROM_EMAIL || 'hello@noalivingstudio.co.zm'}`,
         `ATTENDEE;ROLE=REQ-PARTICIPANT;CN=${name}:mailto:${email}`,
         'STATUS:CONFIRMED',
         'SEQUENCE:0',
@@ -73,7 +73,7 @@ export async function POST(req: Request) {
             );
         }
 
-        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://axisliving.co.zm';
+        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://noalivingstudio.co.zm';
         const cancellationUrl = booking?.id ? `${siteUrl}/booking/cancel?id=${booking.id}` : null;
 
         // 2. Send confirmation emails
@@ -89,11 +89,11 @@ export async function POST(req: Request) {
                 to: [email],
                 subject,
                 html,
-                attachments: [{ filename: 'axis-living-consultation.ics', content: Buffer.from(icsContent) }],
+                attachments: [{ filename: 'noa-living-studio-consultation.ics', content: Buffer.from(icsContent) }],
             }),
             resend.emails.send({
                 from: FROM,
-                to: [process.env.ADMIN_EMAIL || process.env.RESEND_FROM_EMAIL || 'hello@axisliving.co.zm'],
+                to: [process.env.ADMIN_EMAIL || process.env.RESEND_FROM_EMAIL || 'hello@noalivingstudio.co.zm'],
                 subject: `New Consultation Booked: ${name}`,
                 text: [
                     'New booking received!',

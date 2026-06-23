@@ -94,10 +94,10 @@ export default function HomeClient({ featuredProjects, featuredPosts, siteSettin
     const jsonLd = {
         "@context": "https://schema.org",
         "@type": "LocalBusiness",
-        "name": "Axis Living",
-        "image": "https://axisliving.co.zm/og-image.jpg",
-        "@id": "https://axisliving.co.zm",
-        "url": "https://axisliving.co.zm",
+        "name": "NOA Living Studio",
+        "image": "https://noalivingstudio.co.zm/og-image.jpg",
+        "@id": "https://noalivingstudio.co.zm",
+        "url": "https://noalivingstudio.co.zm",
         "telephone": "+260 971 251 110",
         "address": {
             "@type": "PostalAddress",
@@ -125,7 +125,7 @@ export default function HomeClient({ featuredProjects, featuredPosts, siteSettin
             "closes": "17:00"
         },
         "sameAs": [
-            "https://www.instagram.com/axisliving.zm"
+            "https://www.instagram.com/noalivingstudio.zm"
         ],
         "priceRange": "$$$"
     };
@@ -151,7 +151,7 @@ export default function HomeClient({ featuredProjects, featuredPosts, siteSettin
     }
 
     // Default hardcoded content
-    const studioName = siteSettings?.studioName || "Axis Living";
+    const studioName = siteSettings?.studioName || "NOA Living Studio";
     const tagline = siteSettings?.tagline || "Spaces Designed for the Way You Live";
     const heroImage = siteSettings?.heroImage || "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=1600&q=80";
 
@@ -362,7 +362,7 @@ export default function HomeClient({ featuredProjects, featuredPosts, siteSettin
                             {siteSettings?.testimonialsSection?.subtitle || "Client Stories"}
                         </span>
                         <h2 className="text-3xl md:text-5xl font-heading font-light text-white leading-[1.3] max-w-4xl mx-auto">
-                            {siteSettings?.testimonialsSection?.title || "Working with Axis Living was the best decision we made for our new home."}
+                            {siteSettings?.testimonialsSection?.title || "Working with NOA Living Studio was the best decision we made for our new home."}
                         </h2>
                     </motion.div>
                 </div>

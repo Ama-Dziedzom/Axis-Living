@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
             allow: '/',
             disallow: ['/private/', '/studio/', '/api/'],
         },
-        sitemap: 'https://axisliving.co.zm/sitemap.xml',
+        sitemap: 'https://noalivingstudio.co.zm/sitemap.xml',
     }
 }

@@ -185,7 +185,7 @@ function CancelInner() {
 
                             <p className="text-center text-xs text-foreground/30 mt-6">
                                 Want to reschedule instead?{' '}
-                                <a href="mailto:hello@axisliving.co.zm" className="underline hover:text-foreground/60 transition-colors">
+                                <a href="mailto:hello@noalivingstudio.co.zm" className="underline hover:text-foreground/60 transition-colors">
                                     Email us
                                 </a>
                             </p>
@@ -241,7 +241,7 @@ function CancelInner() {
                                 This link may be invalid or expired. Please check your confirmation email or contact us directly.
                             </p>
                             <a
-                                href="mailto:hello@axisliving.co.zm"
+                                href="mailto:hello@noalivingstudio.co.zm"
                                 className="inline-block bg-accent text-white px-8 py-3.5 rounded-full text-xs font-bold uppercase tracking-[2px] hover:bg-accent/90 transition-colors"
                             >
                                 Contact us
@@ -259,7 +259,7 @@ function CancelInner() {
                                 {state.message}
                             </p>
                             <a
-                                href="mailto:hello@axisliving.co.zm"
+                                href="mailto:hello@noalivingstudio.co.zm"
                                 className="inline-block bg-accent text-white px-8 py-3.5 rounded-full text-xs font-bold uppercase tracking-[2px] hover:bg-accent/90 transition-colors"
                             >
                                 Email us

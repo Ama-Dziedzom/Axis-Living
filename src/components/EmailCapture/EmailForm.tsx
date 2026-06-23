@@ -121,7 +121,7 @@ export default function EmailForm({ variant, buttonText, onSuccess }: EmailFormP
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="Your email address"
-                        className="flex-grow px-6 py-4 bg-transparent text-foreground placeholder:text-foreground/35 outline-none text-sm"
+                        className="flex-grow px-6 py-4 bg-transparent text-foreground placeholder:text-foreground/35 outline-none focus-visible:outline-none caret-foreground/40 text-sm"
                         disabled={isSubmitting}
                     />
                     <button

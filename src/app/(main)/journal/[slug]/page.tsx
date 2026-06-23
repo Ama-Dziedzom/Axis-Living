@@ -13,14 +13,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     if (!post) return { title: "Post Not Found" };
 
     return {
-        title: `${post.title} | Axis Living Journal`,
+        title: `${post.title} | NOA Living Studio Journal`,
         description: post.excerpt,
         openGraph: {
-            title: `${post.title} | Axis Living Journal`,
+            title: `${post.title} | NOA Living Studio Journal`,
             description: post.excerpt,
             images: [
                 {
-                    url: post.coverImage ?? "/axis-living.png",
+                    url: post.coverImage ?? "/noa-living-studio.png",
                     width: 1200,
                     height: 630,
                     alt: post.title,
@@ -28,13 +28,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             ],
             type: 'article',
             publishedTime: post.publishedAt,
-            authors: ["Axis Living Studio"],
+            authors: ["NOA Living Studio"],
         },
         twitter: {
             card: 'summary_large_image',
             title: post.title,
             description: post.excerpt,
-            images: [post.coverImage ?? "/axis-living.png"],
+            images: [post.coverImage ?? "/noa-living-studio.png"],
         }
     };
 }
@@ -55,7 +55,7 @@ export default async function PostDetailPage({ params }: Props) {
         "datePublished": post.publishedAt,
         "author": {
             "@type": "Organization",
-            "name": "Axis Living"
+            "name": "NOA Living Studio"
         },
         "description": post.excerpt,
         "articleBody": post.content.filter((block: { type: string }) => block.type === 'paragraph').map((block: { text: string }) => block.text).join(' ')

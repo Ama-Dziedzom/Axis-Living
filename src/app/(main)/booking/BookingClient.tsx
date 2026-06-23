@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useEffect, useRef } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     Calendar,
@@ -17,8 +17,6 @@ import {
     ArrowLeft,
     Sparkles,
     CreditCard,
-    Lock,
-    Smartphone,
     MapPin,
     Video,
 } from "lucide-react";
@@ -76,7 +74,6 @@ function isPast(year: number, month: number, day: number) {
     return target < today;
 }
 
-// Simulate some "booked" slots per date (seeded by date)
 function getBookedSlots(date: Date): string[] {
     const seed = date.getFullYear() * 10000 + date.getMonth() * 100 + date.getDate();
     const booked: string[] = [];
@@ -86,17 +83,8 @@ function getBookedSlots(date: Date): string[] {
     return booked;
 }
 
-// ───── Mobile Money Config ─────
-const MOBILE_NETWORKS = [
-    { code: "AIRTEL", label: "Airtel Money" },
-    { code: "MTN",    label: "MTN MoMo"    },
-    { code: "ZAMTEL", label: "Zamtel Kwacha" },
-] as const;
-
-type NetworkCode = typeof MOBILE_NETWORKS[number]["code"];
-
 // ───── Types ─────
-type BookingStep = "date" | "time" | "details" | "payment" | "confirmed";
+type BookingStep = "date" | "time" | "details" | "confirmed";
 
 interface BookingFormData {
     name: string;
@@ -106,6 +94,22 @@ interface BookingFormData {
     message: string;
     consultationType: "walk-in" | "online" | "";
 }
+
+interface PendingBooking {
+    name: string;
+    email: string;
+    phone: string;
+    date: string;
+    dateISO: string;
+    time: string;
+    projectType: string;
+    consultationType: string;
+    message: string;
+    currency: CurrencyConfig;
+    reference: string;
+}
+
+const STORAGE_KEY = "dpo_pending_booking";
 
 // ───── Component ─────
 interface BookingClientProps {
@@ -134,24 +138,7 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
     const [currency, setCurrency] = useState<CurrencyConfig>(CURRENCIES[0]);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [mounted, setMounted] = useState(false);
-
-    // Payment state — shared
-    const [paymentMethod, setPaymentMethod] = useState<"mobile_money" | "card">("mobile_money");
-    const [paymentReference, setPaymentReference] = useState<string | null>(null);
-    const [paymentStatus, setPaymentStatus] = useState<"idle" | "initiating" | "pending" | "failed">("idle");
-    const pollCancelledRef = useRef(false);
-
-    // Mobile money
-    const [mobileNetwork, setMobileNetwork] = useState<NetworkCode>("AIRTEL");
-    const [mobilePhone, setMobilePhone] = useState("");
-
-    // Card
-    const [cardStep, setCardStep] = useState<"form" | "redirect" | "processing">("form");
-    const [cardRedirectUrl, setCardRedirectUrl] = useState<string | null>(null);
-
-    useEffect(() => {
-        setMounted(true);
-    }, []);
+    const [paymentStatus, setPaymentStatus] = useState<"idle" | "verifying" | "failed">("idle");
 
     // Calendar data
     const daysInMonth = useMemo(() => getDaysInMonth(currentYear, currentMonth), [currentYear, currentMonth]);
@@ -160,14 +147,87 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
         () => (selectedDate ? getBookedSlots(selectedDate) : []),
         [selectedDate]
     );
-
-    // Build calendar grid
     const calendarCells = useMemo(() => {
         const cells: (number | null)[] = [];
         for (let i = 0; i < firstDay; i++) cells.push(null);
         for (let d = 1; d <= daysInMonth; d++) cells.push(d);
         return cells;
     }, [firstDay, daysInMonth]);
+
+    useEffect(() => {
+        setMounted(true);
+
+        // Handle return from DPO hosted checkout
+        const params = new URLSearchParams(window.location.search);
+        const token = params.get("TransactionToken");
+        if (!token) return;
+
+        const raw = sessionStorage.getItem(STORAGE_KEY);
+        if (!raw) {
+            window.history.replaceState({}, "", "/booking");
+            return;
+        }
+
+        const pending: PendingBooking = JSON.parse(raw);
+
+        // Restore UI state so the confirmation screen has the right data
+        setFormData({
+            name: pending.name,
+            email: pending.email,
+            phone: pending.phone,
+            projectType: pending.projectType,
+            message: pending.message,
+            consultationType: pending.consultationType as "walk-in" | "online" | "",
+        });
+        setSelectedDate(new Date(pending.dateISO));
+        setSelectedTime(pending.time);
+        setCurrency(pending.currency);
+        setPaymentStatus("verifying");
+
+        verifyAndConfirm(token, pending);
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+    async function verifyAndConfirm(token: string, pending: PendingBooking) {
+        try {
+            const verifyRes = await fetch(`/api/payment/verify?token=${token}`);
+            const { status } = await verifyRes.json();
+
+            if (status !== "succeeded") {
+                setPaymentStatus("failed");
+                return;
+            }
+
+            const bookRes = await fetch("/api/book", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    name: pending.name,
+                    email: pending.email,
+                    phone: pending.phone,
+                    date: pending.date,
+                    time: pending.time,
+                    projectType: pending.projectType,
+                    consultationType: pending.consultationType,
+                    message: pending.message,
+                    currency: pending.currency.code,
+                    amount: pending.currency.amount,
+                    paymentReference: pending.reference,
+                }),
+            });
+
+            const bookResult = await bookRes.json();
+            if (bookResult.success) {
+                sessionStorage.removeItem(STORAGE_KEY);
+                window.history.replaceState({}, "", "/booking");
+                setStep("confirmed");
+                setPaymentStatus("idle");
+            } else {
+                setPaymentStatus("failed");
+            }
+        } catch {
+            setPaymentStatus("failed");
+        }
+    }
 
     if (!mounted) {
         return <div className="min-h-screen bg-background pt-32 px-4 md:px-6 lg:px-24" />;
@@ -205,35 +265,32 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
         setStep("details");
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const formatSelectedDate = () => {
+        if (!selectedDate) return "";
+        return `${MONTH_NAMES[selectedDate.getMonth()]} ${selectedDate.getDate()}, ${selectedDate.getFullYear()}`;
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!formData.consultationType) return;
 
         const nameParts = formData.name.trim().split(/\s+/);
-        const last = nameParts.length > 1 ? nameParts.slice(1).join(' ') : nameParts[0];
+        const last = nameParts.length > 1 ? nameParts.slice(1).join(" ") : nameParts[0];
         if (last.length < 2) {
             setNameError("Please enter your full name — first and last name.");
             return;
         }
         setNameError(null);
-
-        setMobilePhone(formData.phone || "");
-        setStep("payment");
-    };
-
-    const handlePaymentInitiate = async () => {
-        if (!mobilePhone) return;
-        setPaymentStatus("initiating");
+        setIsSubmitting(true);
 
         try {
-            const res = await fetch('/api/payment/initiate', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+            const res = await fetch("/api/payment/card/initiate", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     name: formData.name,
                     email: formData.email,
-                    phone: mobilePhone,
-                    network: mobileNetwork,
+                    phone: formData.phone,
                     amount: currency.amount,
                     currency: currency.code,
                 }),
@@ -242,110 +299,26 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
             const result = await res.json();
             if (!result.success) throw new Error(result.message);
 
-            setPaymentReference(result.reference);
-            setPaymentStatus("pending");
-            pollForPayment(result.transactionToken, result.reference);
+            // Persist booking data before leaving the page
+            const pending: PendingBooking = {
+                name: formData.name,
+                email: formData.email,
+                phone: formData.phone,
+                date: formatSelectedDate(),
+                dateISO: selectedDate!.toISOString(),
+                time: selectedTime!,
+                projectType: formData.projectType,
+                consultationType: formData.consultationType,
+                message: formData.message,
+                currency,
+                reference: result.reference,
+            };
+            sessionStorage.setItem(STORAGE_KEY, JSON.stringify(pending));
+
+            // Hand off to DPO hosted checkout
+            window.location.href = result.paymentUrl;
         } catch (error) {
             console.error("Payment initiation error:", error);
-            setPaymentStatus("failed");
-        }
-    };
-
-    const pollForPayment = (token: string, reference: string) => {
-        pollCancelledRef.current = false;
-        let attempts = 0;
-        const maxAttempts = 24; // 2 minutes at 5s intervals
-
-        const poll = async () => {
-            if (pollCancelledRef.current) return;
-            attempts++;
-            try {
-                const res = await fetch(`/api/payment/verify?token=${token}`);
-                const result = await res.json();
-
-                if (result.status === "succeeded") {
-                    if (!pollCancelledRef.current) await confirmBooking(reference);
-                    return;
-                }
-
-                if (result.status === "failed" || result.status === "voided") {
-                    setPaymentStatus("failed");
-                    return;
-                }
-
-                if (attempts < maxAttempts) {
-                    setTimeout(poll, 5000);
-                } else {
-                    setPaymentStatus("failed");
-                }
-            } catch {
-                if (attempts < maxAttempts) setTimeout(poll, 5000);
-                else setPaymentStatus("failed");
-            }
-        };
-
-        setTimeout(poll, 5000);
-    };
-
-    const handleCardPaymentInitiate = async () => {
-        setPaymentStatus("initiating");
-        setCardStep("processing");
-
-        try {
-            const res = await fetch('/api/payment/card/initiate', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    name: formData.name,
-                    email: formData.email,
-                    phone: formData.phone,
-                    amount: currency.amount,
-                    currency: currency.code,
-                }),
-            });
-
-            const result = await res.json();
-            if (!result.success) throw new Error(result.message);
-
-            setPaymentReference(result.reference);
-            setCardRedirectUrl(result.paymentUrl);
-            setCardStep("redirect");
-            setPaymentStatus("pending");
-            pollForPayment(result.transactionToken, result.reference);
-        } catch (error) {
-            console.error('Card payment error:', error);
-            setPaymentStatus("failed");
-            setCardStep("form");
-        }
-    };
-
-    const confirmBooking = async (reference: string) => {
-        pollCancelledRef.current = true;
-        setIsSubmitting(true);
-        try {
-            const res = await fetch('/api/book', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    name: formData.name,
-                    email: formData.email,
-                    phone: formData.phone,
-                    date: formatSelectedDate(),
-                    time: selectedTime,
-                    projectType: formData.projectType,
-                    consultationType: formData.consultationType,
-                    message: formData.message,
-                    currency: currency.code,
-                    amount: currency.amount,
-                    paymentReference: reference,
-                }),
-            });
-            const result = await res.json();
-            if (result.success) setStep("confirmed");
-            else setPaymentStatus("failed");
-        } catch {
-            setPaymentStatus("failed");
-        } finally {
             setIsSubmitting(false);
         }
     };
@@ -357,21 +330,12 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
         setFormData({ name: "", email: "", phone: "", projectType: "", message: "", consultationType: "" });
         setNameError(null);
         setCurrency(CURRENCIES[0]);
-        setPaymentMethod("mobile_money");
-        setMobilePhone("");
-        setMobileNetwork("AIRTEL");
-        setPaymentReference(null);
         setPaymentStatus("idle");
-        setCardStep("form");
-        setCardRedirectUrl(null);
+        sessionStorage.removeItem(STORAGE_KEY);
     };
 
-
-
-    const formatSelectedDate = () => {
-        if (!selectedDate) return "";
-        return `${MONTH_NAMES[selectedDate.getMonth()]} ${selectedDate.getDate()}, ${selectedDate.getFullYear()}`;
-    };
+    const stepNumber = step === "date" ? "1" : step === "time" ? "2" : "3";
+    const progressWidth = step === "date" ? "33%" : step === "time" ? "66%" : "100%";
 
     // ───── Render ─────
     return (
@@ -443,35 +407,24 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
 
                 {/* ───── Booking Widget ───── */}
                 <div className="w-full bg-white shadow-2xl rounded-sm overflow-hidden border border-foreground/5">
-                    {/* Widget header with progress */}
+                    {/* Widget header */}
                     <div className="p-6 border-b border-white/10 bg-accent">
                         <div className="flex items-center justify-between mb-4">
                             <span className="text-white text-xs uppercase tracking-[0.3em] font-bold">
                                 Secure Booking Portal
                             </span>
-                            {step !== "confirmed" && (
+                            {step !== "confirmed" && paymentStatus === "idle" && (
                                 <span className="text-white/70 text-xs uppercase tracking-[0.2em]">
-                                    Step{" "}
-                                    {step === "date" ? "1" : step === "time" ? "2" : step === "details" ? "3" : "4"} of 4
+                                    Step {stepNumber} of 3
                                 </span>
                             )}
                         </div>
-                        {/* Progress bar */}
-                        {step !== "confirmed" && (
+                        {step !== "confirmed" && paymentStatus === "idle" && (
                             <div className="w-full h-[2px] bg-white/20 rounded-full overflow-hidden">
                                 <motion.div
                                     className="h-full bg-white rounded-full"
                                     initial={{ width: "0%" }}
-                                    animate={{
-                                        width:
-                                            step === "date"
-                                                ? "25%"
-                                                : step === "time"
-                                                    ? "50%"
-                                                    : step === "details"
-                                                        ? "75%"
-                                                        : "100%",
-                                    }}
+                                    animate={{ width: progressWidth }}
                                     transition={{ duration: 0.5, ease: "easeInOut" }}
                                 />
                             </div>
@@ -481,8 +434,70 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
                     {/* Widget body */}
                     <div className="relative min-h-[550px]">
                         <AnimatePresence mode="wait">
+
+                            {/* ── Verifying payment (returned from DPO) ── */}
+                            {paymentStatus === "verifying" && (
+                                <motion.div
+                                    key="verifying"
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    className="flex flex-col items-center justify-center py-24 text-center px-8"
+                                >
+                                    <motion.div
+                                        animate={{ scale: [1, 1.12, 1] }}
+                                        transition={{ repeat: Infinity, duration: 1.6, ease: "easeInOut" }}
+                                        className="w-20 h-20 bg-accent/10 rounded-full flex items-center justify-center mb-8"
+                                    >
+                                        <CreditCard size={32} className="text-accent" />
+                                    </motion.div>
+                                    <p className="text-foreground/40 text-xs uppercase tracking-[0.3em] font-bold mb-3">
+                                        Just a moment
+                                    </p>
+                                    <p className="text-2xl font-heading mb-4">Confirming your payment</p>
+                                    <p className="text-foreground/50 text-sm max-w-xs leading-relaxed mb-8">
+                                        We&apos;re verifying your payment with DPO Pay and securing your slot.
+                                    </p>
+                                    <div className="flex gap-1">
+                                        {[0, 1, 2].map(i => (
+                                            <motion.span
+                                                key={i}
+                                                className="w-2 h-2 bg-accent rounded-full"
+                                                animate={{ opacity: [0.3, 1, 0.3] }}
+                                                transition={{ repeat: Infinity, duration: 1.2, delay: i * 0.2 }}
+                                            />
+                                        ))}
+                                    </div>
+                                </motion.div>
+                            )}
+
+                            {/* ── Payment failed (returned from DPO) ── */}
+                            {paymentStatus === "failed" && (
+                                <motion.div
+                                    key="failed"
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    className="flex flex-col items-center justify-center py-24 text-center px-8"
+                                >
+                                    <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mb-8">
+                                        <span className="text-3xl">✕</span>
+                                    </div>
+                                    <p className="text-xl font-heading mb-4">Payment not completed</p>
+                                    <p className="text-foreground/50 text-sm max-w-xs leading-relaxed mb-8">
+                                        Your payment could not be confirmed. No charge was made. Please try again.
+                                    </p>
+                                    <button
+                                        onClick={handleReset}
+                                        className="bg-accent text-white px-8 py-3 rounded-full text-xs font-bold tracking-[0.2em] uppercase hover:shadow-lg transition-shadow"
+                                    >
+                                        Try Again
+                                    </button>
+                                </motion.div>
+                            )}
+
                             {/* ─── STEP 1: Calendar ─── */}
-                            {step === "date" && (
+                            {paymentStatus === "idle" && step === "date" && (
                                 <motion.div
                                     key="date"
                                     initial={{ opacity: 0, x: 30 }}
@@ -495,7 +510,6 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
                                         Select a Date
                                     </p>
 
-                                    {/* Month Navigation */}
                                     <div className="flex items-center justify-between mb-8 max-w-md mx-auto">
                                         <button
                                             onClick={prevMonth}
@@ -517,7 +531,6 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
                                         </button>
                                     </div>
 
-                                    {/* Day labels */}
                                     <div className="grid grid-cols-7 gap-1 max-w-md mx-auto mb-2">
                                         {DAY_LABELS.map((d) => (
                                             <div
@@ -529,27 +542,14 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
                                         ))}
                                     </div>
 
-                                    {/* Calendar grid */}
                                     <div className="grid grid-cols-7 gap-1 max-w-md mx-auto">
                                         {calendarCells.map((day, i) => {
-                                            if (day === null) {
-                                                return <div key={`empty-${i}`} />;
-                                            }
-
+                                            if (day === null) return <div key={`empty-${i}`} />;
                                             const past = isPast(currentYear, currentMonth, day);
                                             const weekend = isWeekend(currentYear, currentMonth, day);
                                             const disabled = past || weekend;
-                                            const isToday = isSameDay(
-                                                new Date(currentYear, currentMonth, day),
-                                                today
-                                            );
-                                            const isSelected =
-                                                selectedDate &&
-                                                isSameDay(
-                                                    new Date(currentYear, currentMonth, day),
-                                                    selectedDate
-                                                );
-
+                                            const isToday = isSameDay(new Date(currentYear, currentMonth, day), today);
+                                            const isSelected = selectedDate && isSameDay(new Date(currentYear, currentMonth, day), selectedDate);
                                             return (
                                                 <button
                                                     key={`day-${day}`}
@@ -577,7 +577,6 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
                                         })}
                                     </div>
 
-                                    {/* Legend */}
                                     <div className="flex items-center justify-center gap-6 mt-8 text-xs uppercase tracking-widest text-foreground/30">
                                         <div className="flex items-center gap-2">
                                             <span className="w-3 h-3 rounded-sm bg-accent/10 ring-1 ring-accent/30" />
@@ -596,7 +595,7 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
                             )}
 
                             {/* ─── STEP 2: Time Slots ─── */}
-                            {step === "time" && (
+                            {paymentStatus === "idle" && step === "time" && (
                                 <motion.div
                                     key="time"
                                     initial={{ opacity: 0, x: 30 }}
@@ -624,7 +623,6 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
                                         {TIME_SLOTS.map((slot) => {
                                             const isBooked = bookedSlots.includes(slot);
                                             const isActive = selectedTime === slot;
-
                                             return (
                                                 <button
                                                     key={slot}
@@ -652,8 +650,8 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
                                 </motion.div>
                             )}
 
-                            {/* ─── STEP 3: Contact Details Form ─── */}
-                            {step === "details" && (
+                            {/* ─── STEP 3: Details + Pay ─── */}
+                            {paymentStatus === "idle" && step === "details" && (
                                 <motion.div
                                     key="details"
                                     initial={{ opacity: 0, x: 30 }}
@@ -670,28 +668,20 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
                                         Change time
                                     </button>
 
-                                    {/* Selected date/time summary */}
                                     <div className="flex flex-col items-center mb-10">
                                         <p className="text-foreground/40 text-xs uppercase tracking-[0.3em] font-bold mb-3">
                                             Your Appointment
                                         </p>
                                         <div className="flex items-center gap-4 bg-accent/5 px-6 py-3 rounded-full">
                                             <Calendar size={16} className="text-accent" />
-                                            <span className="text-sm font-medium">
-                                                {formatSelectedDate()}
-                                            </span>
+                                            <span className="text-sm font-medium">{formatSelectedDate()}</span>
                                             <span className="text-foreground/20">|</span>
                                             <Clock size={16} className="text-accent" />
-                                            <span className="text-sm font-medium">
-                                                {selectedTime}
-                                            </span>
+                                            <span className="text-sm font-medium">{selectedTime}</span>
                                         </div>
                                     </div>
 
-                                    <form
-                                        onSubmit={handleSubmit}
-                                        className="max-w-lg mx-auto space-y-5"
-                                    >
+                                    <form onSubmit={handleSubmit} className="max-w-lg mx-auto space-y-5">
                                         {/* Name */}
                                         <div className="relative">
                                             <User
@@ -703,9 +693,7 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
                                                 placeholder="Full Name (first and last)"
                                                 required
                                                 value={formData.name}
-                                                onChange={(e) =>
-                                                    setFormData({ ...formData, name: e.target.value })
-                                                }
+                                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                                 className={`w-full pl-12 pr-4 py-4 bg-white border rounded-sm text-sm text-neutral-800 font-body placeholder:text-foreground/30 focus:outline-none transition-all ${nameError ? "border-red-400 focus:border-red-400" : "border-foreground/10 focus:border-accent"}`}
                                             />
                                             {nameError && (
@@ -715,35 +703,25 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
 
                                         {/* Email */}
                                         <div className="relative">
-                                            <Mail
-                                                size={16}
-                                                className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground/25"
-                                            />
+                                            <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground/25" />
                                             <input
                                                 type="email"
                                                 placeholder="Email Address"
                                                 required
                                                 value={formData.email}
-                                                onChange={(e) =>
-                                                    setFormData({ ...formData, email: e.target.value })
-                                                }
+                                                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                                 className="w-full pl-12 pr-4 py-4 bg-white border border-foreground/10 rounded-sm text-sm text-neutral-800 font-body placeholder:text-foreground/30 focus:outline-none focus:border-accent transition-all"
                                             />
                                         </div>
 
                                         {/* Phone */}
                                         <div className="relative">
-                                            <Phone
-                                                size={16}
-                                                className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground/25"
-                                            />
+                                            <Phone size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground/25" />
                                             <input
                                                 type="tel"
                                                 placeholder="Phone Number (optional)"
                                                 value={formData.phone}
-                                                onChange={(e) =>
-                                                    setFormData({ ...formData, phone: e.target.value })
-                                                }
+                                                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                                                 className="w-full pl-12 pr-4 py-4 bg-white border border-foreground/10 rounded-sm text-sm text-neutral-800 font-body placeholder:text-foreground/30 focus:outline-none focus:border-accent transition-all"
                                             />
                                         </div>
@@ -776,63 +754,37 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
                                             </div>
                                         </div>
 
-                                        {/* Project type */}
+                                        {/* Project Type */}
                                         <div className="relative">
-                                            <Sparkles
-                                                size={16}
-                                                className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground/25"
-                                            />
+                                            <Sparkles size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground/25" />
                                             <select
                                                 required
                                                 value={formData.projectType}
-                                                onChange={(e) =>
-                                                    setFormData({
-                                                        ...formData,
-                                                        projectType: e.target.value,
-                                                    })
-                                                }
+                                                onChange={(e) => setFormData({ ...formData, projectType: e.target.value })}
                                                 className="w-full pl-12 pr-4 py-4 bg-white border border-foreground/10 rounded-sm text-sm font-body text-neutral-800 focus:outline-none focus:border-accent transition-all appearance-none cursor-pointer"
                                             >
-                                                <option value="" disabled>
-                                                    Project Type
-                                                </option>
-                                                <option value="residential">
-                                                    Residential Design
-                                                </option>
-                                                <option value="commercial">
-                                                    Commercial / Hospitality
-                                                </option>
-                                                <option value="renovation">
-                                                    Renovation / Remodel
-                                                </option>
-                                                <option value="consultation">
-                                                    Design Consultation Only
-                                                </option>
+                                                <option value="" disabled>Project Type</option>
+                                                <option value="residential">Residential Design</option>
+                                                <option value="commercial">Commercial / Hospitality</option>
+                                                <option value="renovation">Renovation / Remodel</option>
+                                                <option value="consultation">Design Consultation Only</option>
                                                 <option value="other">Other</option>
                                             </select>
                                         </div>
 
                                         {/* Message */}
                                         <div className="relative">
-                                            <MessageSquare
-                                                size={16}
-                                                className="absolute left-4 top-4 text-foreground/25"
-                                            />
+                                            <MessageSquare size={16} className="absolute left-4 top-4 text-foreground/25" />
                                             <textarea
                                                 placeholder="Tell us briefly about your space and vision..."
                                                 rows={4}
                                                 value={formData.message}
-                                                onChange={(e) =>
-                                                    setFormData({
-                                                        ...formData,
-                                                        message: e.target.value,
-                                                    })
-                                                }
+                                                onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                                                 className="w-full pl-12 pr-4 py-4 bg-white border border-foreground/10 rounded-sm text-sm text-neutral-800 font-body placeholder:text-foreground/30 focus:outline-none focus:border-accent transition-all resize-none"
                                             />
                                         </div>
 
-                                        {/* Consultation Fee */}
+                                        {/* Currency */}
                                         <div>
                                             <p className="text-xs uppercase tracking-widest text-foreground/40 font-bold mb-3">
                                                 Consultation Fee
@@ -863,7 +815,7 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
                                             </div>
                                         </div>
 
-                                        {/* Submit */}
+                                        {/* Submit → redirect to DPO */}
                                         <motion.button
                                             type="submit"
                                             disabled={isSubmitting}
@@ -875,252 +827,29 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
                                                 <>
                                                     <motion.span
                                                         animate={{ rotate: 360 }}
-                                                        transition={{
-                                                            repeat: Infinity,
-                                                            duration: 1,
-                                                            ease: "linear",
-                                                        }}
+                                                        transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
                                                         className="inline-block"
                                                     >
                                                         ⏳
                                                     </motion.span>
-                                                    Confirming your booking...
+                                                    Redirecting to checkout...
                                                 </>
                                             ) : (
                                                 <>
                                                     Pay {currency.symbol}{currency.amount.toLocaleString()} &amp; Confirm
-                                                    <CreditCard size={16} />
+                                                    <ArrowRight size={16} />
                                                 </>
                                             )}
                                         </motion.button>
 
                                         <p className="text-center text-foreground/40 text-xs mt-2">
-                                            Secure payment via DPO Pay. Your slot is reserved once payment is complete.
+                                            You&apos;ll be taken to DPO Pay&apos;s secure checkout. Your slot is reserved once payment is complete.
                                         </p>
                                     </form>
                                 </motion.div>
                             )}
 
-                            {/* ─── STEP 4: Payment ─── */}
-                            {step === "payment" && (
-                                <motion.div
-                                    key="payment"
-                                    initial={{ opacity: 0, x: 30 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    exit={{ opacity: 0, x: -30 }}
-                                    transition={{ duration: 0.35 }}
-                                    className="p-8 md:p-12"
-                                >
-                                    {/* ── Processing / Pending spinner ── */}
-                                    {(paymentStatus === "initiating" || (paymentStatus === "pending" && cardStep === "redirect") || (paymentStatus === "pending" && paymentMethod === "mobile_money")) ? (
-                                        <div className="flex flex-col items-center justify-center py-16 text-center">
-                                            <motion.div
-                                                animate={{ scale: [1, 1.15, 1] }}
-                                                transition={{ repeat: Infinity, duration: 1.8, ease: "easeInOut" }}
-                                                className="w-20 h-20 bg-accent/10 rounded-full flex items-center justify-center mb-8"
-                                            >
-                                                {paymentMethod === "mobile_money"
-                                                    ? <Smartphone size={32} className="text-accent" />
-                                                    : <CreditCard size={32} className="text-accent" />
-                                                }
-                                            </motion.div>
-                                            <p className="text-foreground/40 text-xs uppercase tracking-[0.3em] font-bold mb-3">
-                                                {paymentStatus === "initiating" ? "Processing..." : "Waiting for approval"}
-                                            </p>
-                                            <p className="text-xl font-heading mb-4">
-                                                {paymentMethod === "mobile_money" ? "Check your phone" : cardStep === "redirect" ? "Complete bank verification" : "Processing your card..."}
-                                            </p>
-                                            {paymentMethod === "mobile_money" && paymentStatus === "pending" && (
-                                                <p className="text-foreground/50 text-sm max-w-xs leading-relaxed mb-8">
-                                                    A payment request of <strong>{currency.symbol}{currency.amount.toLocaleString()}</strong> has been sent to <strong>{mobilePhone}</strong> via {MOBILE_NETWORKS.find(n => n.code === mobileNetwork)?.label}. Enter your PIN to confirm.
-                                                </p>
-                                            )}
-                                            {cardStep === "redirect" && cardRedirectUrl && (
-                                                <div className="space-y-4 mb-8">
-                                                    <p className="text-foreground/50 text-sm max-w-xs leading-relaxed">
-                                                        Complete your card payment in the new tab, then return here.
-                                                    </p>
-                                                    <a
-                                                        href={cardRedirectUrl}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="inline-flex items-center gap-2 bg-accent text-white px-6 py-3 rounded-full text-xs font-bold tracking-[0.2em] uppercase hover:shadow-lg transition-shadow"
-                                                    >
-                                                        Open Bank Page <ArrowRight size={14} />
-                                                    </a>
-                                                </div>
-                                            )}
-                                            <div className="flex gap-1 mb-8">
-                                                {[0, 1, 2].map(i => (
-                                                    <motion.span
-                                                        key={i}
-                                                        className="w-2 h-2 bg-accent rounded-full"
-                                                        animate={{ opacity: [0.3, 1, 0.3] }}
-                                                        transition={{ repeat: Infinity, duration: 1.2, delay: i * 0.2 }}
-                                                    />
-                                                ))}
-                                            </div>
-                                            {process.env.NEXT_PUBLIC_DPO_SANDBOX === 'true' && paymentReference && (
-                                                <button
-                                                    onClick={() => confirmBooking(paymentReference)}
-                                                    className="text-xs uppercase tracking-widest text-foreground/30 border border-dashed border-foreground/20 px-4 py-2 rounded-full hover:text-accent hover:border-accent transition-colors"
-                                                >
-                                                    Simulate Success (Sandbox Only)
-                                                </button>
-                                            )}
-                                        </div>
-
-                                    ) : paymentStatus === "failed" ? (
-                                        /* ── Failed ── */
-                                        <div className="flex flex-col items-center justify-center py-16 text-center">
-                                            <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mb-8">
-                                                <span className="text-3xl">✕</span>
-                                            </div>
-                                            <p className="text-xl font-heading mb-4">Payment failed</p>
-                                            <p className="text-foreground/50 text-sm max-w-xs leading-relaxed mb-8">
-                                                The payment was not completed. Please try again or use a different method.
-                                            </p>
-                                            <button
-                                                onClick={() => { setPaymentStatus("idle"); setCardStep("form"); }}
-                                                className="bg-accent text-white px-8 py-3 rounded-full text-xs font-bold tracking-[0.2em] uppercase hover:shadow-lg transition-shadow"
-                                            >
-                                                Try Again
-                                            </button>
-                                        </div>
-
-                                    ) : (
-                                        /* ── Idle: payment method selector + forms ── */
-                                        <>
-                                            <button
-                                                onClick={() => { setStep("details"); setPaymentStatus("idle"); setCardStep("form"); }}
-                                                className="flex items-center gap-2 text-foreground/40 hover:text-accent text-xs uppercase tracking-widest mb-8 transition-colors"
-                                            >
-                                                <ArrowLeft size={14} />
-                                                Back to details
-                                            </button>
-
-                                            <p className="text-center text-foreground/40 text-xs uppercase tracking-[0.3em] font-bold mb-2">
-                                                Payment
-                                            </p>
-                                            <p className="text-center text-3xl font-heading mb-8">
-                                                {currency.symbol}{currency.amount.toLocaleString()} <span className="text-base font-body text-foreground/40">{currency.name}</span>
-                                            </p>
-
-                                            {/* Payment method toggle */}
-                                            <div className="max-w-sm mx-auto mb-8">
-                                                <div className="flex rounded-sm overflow-hidden border border-foreground/10">
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => setPaymentMethod("mobile_money")}
-                                                        disabled={currency.code !== "ZMW"}
-                                                        className={`flex-1 py-3 flex items-center justify-center gap-2 text-xs font-bold tracking-wider transition-all ${
-                                                            paymentMethod === "mobile_money"
-                                                                ? "bg-accent text-white"
-                                                                : currency.code !== "ZMW"
-                                                                    ? "bg-white text-foreground/20 cursor-not-allowed"
-                                                                    : "bg-white text-foreground/40 hover:bg-accent/5 hover:text-accent"
-                                                        }`}
-                                                    >
-                                                        <Smartphone size={14} /> Mobile Money
-                                                    </button>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => setPaymentMethod("card")}
-                                                        className={`flex-1 py-3 flex items-center justify-center gap-2 text-xs font-bold tracking-wider transition-all ${
-                                                            paymentMethod === "card"
-                                                                ? "bg-accent text-white"
-                                                                : "bg-white text-foreground/40 hover:bg-accent/5 hover:text-accent"
-                                                        }`}
-                                                    >
-                                                        <CreditCard size={14} /> Card
-                                                    </button>
-                                                </div>
-                                                {currency.code !== "ZMW" && paymentMethod === "card" && (
-                                                    <p className="text-center text-foreground/30 text-xs mt-2">
-                                                        Mobile Money is only available for ZMW payments
-                                                    </p>
-                                                )}
-                                            </div>
-
-                                            {/* ── Mobile Money form ── */}
-                                            {paymentMethod === "mobile_money" && (
-                                                <div className="max-w-sm mx-auto space-y-5">
-                                                    <div>
-                                                        <p className="text-xs uppercase tracking-widest text-foreground/40 font-bold mb-3">Network</p>
-                                                        <div className="flex rounded-sm overflow-hidden border border-foreground/10">
-                                                            {MOBILE_NETWORKS.map((n) => (
-                                                                <button
-                                                                    key={n.code}
-                                                                    type="button"
-                                                                    onClick={() => setMobileNetwork(n.code)}
-                                                                    className={`flex-1 py-3 text-xs font-bold tracking-wider transition-all ${
-                                                                        mobileNetwork === n.code
-                                                                            ? "bg-accent text-white"
-                                                                            : "bg-white text-foreground/40 hover:bg-accent/5 hover:text-accent"
-                                                                    }`}
-                                                                >
-                                                                    {n.code}
-                                                                </button>
-                                                            ))}
-                                                        </div>
-                                                        <p className="text-center text-foreground/30 text-xs mt-2">
-                                                            {MOBILE_NETWORKS.find(n => n.code === mobileNetwork)?.label}
-                                                        </p>
-                                                    </div>
-                                                    <div className="relative">
-                                                        <Phone size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground/25" />
-                                                        <input
-                                                            type="tel"
-                                                            placeholder="Mobile Money Number (e.g. 0971234567)"
-                                                            value={mobilePhone}
-                                                            onChange={(e) => setMobilePhone(e.target.value)}
-                                                            className="w-full pl-12 pr-4 py-4 bg-white border border-foreground/10 rounded-sm text-sm text-neutral-800 font-body placeholder:text-foreground/30 focus:outline-none focus:border-accent transition-all"
-                                                        />
-                                                    </div>
-                                                    <motion.button
-                                                        type="button"
-                                                        onClick={handlePaymentInitiate}
-                                                        disabled={!mobilePhone}
-                                                        whileHover={{ scale: 1.02 }}
-                                                        whileTap={{ scale: 0.98 }}
-                                                        className="w-full bg-accent text-white py-5 rounded-full text-xs font-bold tracking-[0.3em] uppercase flex items-center justify-center gap-3 hover:shadow-lg hover:shadow-accent/20 transition-shadow disabled:opacity-60"
-                                                    >
-                                                        Pay {currency.symbol}{currency.amount.toLocaleString()}
-                                                        <ArrowRight size={16} />
-                                                    </motion.button>
-                                                    <p className="text-center text-foreground/30 text-xs">
-                                                        A payment prompt will be sent to your phone. Enter your PIN to confirm.
-                                                    </p>
-                                                </div>
-                                            )}
-
-                                            {/* ── Card ── */}
-                                            {paymentMethod === "card" && (
-                                                <div className="max-w-sm mx-auto space-y-5">
-                                                    <p className="text-center text-foreground/50 text-sm leading-relaxed">
-                                                        You&apos;ll be taken to DPO Pay&apos;s secure page to enter your card details.
-                                                    </p>
-                                                    <motion.button
-                                                        type="button"
-                                                        onClick={handleCardPaymentInitiate}
-                                                        whileHover={{ scale: 1.02 }}
-                                                        whileTap={{ scale: 0.98 }}
-                                                        className="w-full bg-accent text-white py-5 rounded-full text-xs font-bold tracking-[0.3em] uppercase flex items-center justify-center gap-3 hover:shadow-lg hover:shadow-accent/20 transition-shadow"
-                                                    >
-                                                        Pay {currency.symbol}{currency.amount.toLocaleString()}
-                                                        <Lock size={14} />
-                                                    </motion.button>
-                                                    <p className="text-center text-foreground/30 text-xs flex items-center justify-center gap-1">
-                                                        <Lock size={10} /> Encrypted &amp; secured by DPO Pay
-                                                    </p>
-                                                </div>
-                                            )}
-                                        </>
-                                    )}
-                                </motion.div>
-                            )}
-
-                            {/* ─── STEP 5: Confirmation ─── */}
+                            {/* ─── CONFIRMED ─── */}
                             {step === "confirmed" && (
                                 <motion.div
                                     key="confirmed"
@@ -1132,18 +861,11 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
                                     <motion.div
                                         initial={{ scale: 0 }}
                                         animate={{ scale: 1 }}
-                                        transition={{
-                                            type: "spring",
-                                            stiffness: 200,
-                                            delay: 0.2,
-                                        }}
+                                        transition={{ type: "spring", stiffness: 200, delay: 0.2 }}
                                         className="mb-8"
                                     >
                                         <div className="w-20 h-20 bg-accent/10 rounded-full flex items-center justify-center">
-                                            <CheckCircle2
-                                                size={40}
-                                                className="text-accent"
-                                            />
+                                            <CheckCircle2 size={40} className="text-accent" />
                                         </div>
                                     </motion.div>
 
@@ -1153,8 +875,7 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
                                         transition={{ delay: 0.4 }}
                                         className="text-4xl md:text-5xl font-heading mb-6"
                                     >
-                                        You&apos;re{" "}
-                                        <span className="italic font-light">Booked!</span>
+                                        You&apos;re <span className="italic font-light">Booked!</span>
                                     </motion.h2>
 
                                     <motion.div
@@ -1165,9 +886,7 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
                                     >
                                         <div className="flex items-center gap-3 text-sm">
                                             <Calendar size={16} className="text-accent" />
-                                            <span className="font-medium">
-                                                {formatSelectedDate()}
-                                            </span>
+                                            <span className="font-medium">{formatSelectedDate()}</span>
                                         </div>
                                         <div className="flex items-center gap-3 text-sm">
                                             <Clock size={16} className="text-accent" />
@@ -1179,12 +898,13 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
                                         </div>
                                         {formData.consultationType && (
                                             <div className="flex items-center gap-3 text-sm mt-1">
-                                                {formData.consultationType === "walk-in" ? (
-                                                    <MapPin size={16} className="text-accent" />
-                                                ) : (
-                                                    <Video size={16} className="text-accent" />
-                                                )}
-                                                <span className="font-medium capitalize">{formData.consultationType === "walk-in" ? "Walk-in (In-person)" : "Online (Video call)"}</span>
+                                                {formData.consultationType === "walk-in"
+                                                    ? <MapPin size={16} className="text-accent" />
+                                                    : <Video size={16} className="text-accent" />
+                                                }
+                                                <span className="font-medium capitalize">
+                                                    {formData.consultationType === "walk-in" ? "Walk-in (In-person)" : "Online (Video call)"}
+                                                </span>
                                             </div>
                                         )}
                                     </motion.div>
@@ -1196,13 +916,11 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
                                         className="max-w-md text-foreground/50 text-sm leading-relaxed mb-10"
                                     >
                                         Check your inbox at{" "}
-                                        <span className="text-accent font-medium">
-                                            {formData.email}
-                                        </span>{" "}
+                                        <span className="text-accent font-medium">{formData.email}</span>{" "}
                                         for a confirmation.{" "}
                                         {formData.consultationType === "online"
-                                            ? "We’ll send over a meeting link — looking forward to hearing about your space!"
-                                            : "We’ll see you at the studio — looking forward to meeting you!"
+                                            ? "We'll send over a meeting link — looking forward to hearing about your space!"
+                                            : "We'll see you at the studio — looking forward to meeting you!"
                                         }
                                     </motion.p>
 
@@ -1221,7 +939,7 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
                     </div>
 
                     {/* Footer */}
-                    {step !== "confirmed" && (
+                    {step !== "confirmed" && paymentStatus === "idle" && (
                         <div className="p-12 bg-foreground text-white text-center">
                             <p className="text-sm opacity-60 uppercase tracking-widest mb-4 font-bold">
                                 What&apos;s Next?
@@ -1240,7 +958,6 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
                         <span className="text-accent text-xs font-bold uppercase tracking-[0.4em] mb-4 block">Common Queries</span>
                         <h2 className="text-3xl md:text-5xl font-heading tracking-wide">Frequently Asked <span className="italic font-light">Questions</span></h2>
                     </header>
-
                     <div className="space-y-4">
                         {[
                             {
@@ -1268,7 +985,10 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
                 {/* Email fallback */}
                 <div className="mt-24 text-center opacity-40 hover:opacity-100 transition-opacity">
                     <p className="text-xs font-bold uppercase tracking-widest flex items-center gap-3 justify-center mb-6">
-                        <Mail size={16} /> or reach out directly: <a href={`mailto:${siteSettings?.email}`} className="text-accent hover:underline">{siteSettings?.email}</a>
+                        <Mail size={16} /> or reach out directly:{" "}
+                        <a href={`mailto:${siteSettings?.email}`} className="text-accent hover:underline">
+                            {siteSettings?.email}
+                        </a>
                     </p>
                 </div>
             </div>
@@ -1276,9 +996,8 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
     );
 };
 
-const FAQItem = ({ question, answer }: { question: string, answer: string }) => {
+const FAQItem = ({ question, answer }: { question: string; answer: string }) => {
     const [isOpen, setIsOpen] = useState(false);
-
     return (
         <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -1290,7 +1009,7 @@ const FAQItem = ({ question, answer }: { question: string, answer: string }) => 
                 onClick={() => setIsOpen(!isOpen)}
                 className="w-full py-8 flex items-center justify-between text-left group"
             >
-                <h4 className={`text-lg md:text-xl font-body transition-colors duration-300 ${isOpen ? 'text-accent' : 'text-foreground/80 group-hover:text-foreground'}`}>
+                <h4 className={`text-lg md:text-xl font-body transition-colors duration-300 ${isOpen ? "text-accent" : "text-foreground/80 group-hover:text-foreground"}`}>
                     {question}
                 </h4>
                 <motion.div
@@ -1298,7 +1017,7 @@ const FAQItem = ({ question, answer }: { question: string, answer: string }) => 
                     transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
                     className="flex-shrink-0 ml-4"
                 >
-                    <ChevronDown size={20} className={isOpen ? 'text-accent' : 'text-foreground/30'} />
+                    <ChevronDown size={20} className={isOpen ? "text-accent" : "text-foreground/30"} />
                 </motion.div>
             </button>
             <AnimatePresence>

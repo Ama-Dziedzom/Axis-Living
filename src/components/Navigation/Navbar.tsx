@@ -52,31 +52,38 @@ const Navbar = ({ siteSettings }: NavbarProps) => {
     return (
         <nav
             className={cn(
-                "fixed top-0 left-0 right-0 z-50 px-6 md:px-12 py-6 md:py-8 flex items-center justify-between transition-[padding,background-color] duration-500",
+                "fixed top-0 left-0 right-0 z-50 px-6 md:px-12 py-4 md:py-5 flex items-center justify-between transition-[padding,background-color] duration-500",
                 (scrolled && !isOpen)
-                    ? "bg-background/30 backdrop-blur-xl shadow-[0_4px_30px_rgba(0,0,0,0.03)] border-b border-white/10 py-4 md:py-4"
+                    ? "bg-background/95 backdrop-blur-xl shadow-sm py-2 md:py-3"
                     : "bg-transparent",
                 isOpen ? "text-foreground transition-none" : navTextColor
             )}
         >
-            <Link href="/" className="relative block">
-                {siteSettings?.headerLogo ? (
-                    <Image
-                        src={siteSettings.headerLogo}
-                        alt={`${siteSettings?.studioName || "Axis Living"} - Bespoke Interiors`}
-                        width={240}
-                        height={100}
-                        className="h-12 md:h-20 w-auto object-contain transition-all duration-500"
-                        style={{
-                            filter: isDarkHero && !scrolled
-                                ? "brightness(0) invert(1)"
-                                : "brightness(0)"
-                        }}
-                        priority
-                    />
-                ) : (
-                    <span className="text-xl font-heading tracking-widest text-accent uppercase">Axis Living</span>
-                )}
+            <Link href="/" className="relative block h-10 md:h-12 overflow-visible">
+                {/* White logo — dark hero sections before scroll */}
+                <Image
+                    src="/noa logo-white.png"
+                    alt="NOA Living Studio"
+                    width={240}
+                    height={100}
+                    className={cn(
+                        "absolute inset-0 h-10 md:h-12 w-auto object-contain transition-opacity duration-500 scale-[3.2] md:scale-[3.8] origin-left",
+                        isDarkHero && !scrolled && !isOpen ? "opacity-100" : "opacity-0"
+                    )}
+                    priority
+                />
+                {/* Green logo — scrolled state, light-bg pages, mobile menu */}
+                <Image
+                    src="/noa logo-green.png"
+                    alt="NOA Living Studio"
+                    width={240}
+                    height={100}
+                    className={cn(
+                        "h-10 md:h-12 w-auto object-contain transition-opacity duration-500 scale-[3.2] md:scale-[3.8] origin-left",
+                        isDarkHero && !scrolled && !isOpen ? "opacity-0" : "opacity-100"
+                    )}
+                    priority
+                />
             </Link>
 
             {/* Desktop Nav */}

@@ -9,5 +9,5 @@ export function getResend(): Resend {
     return _resend
 }
 
-export const FROM = `${process.env.RESEND_FROM_NAME || 'Axis Living'} <${process.env.RESEND_FROM_EMAIL || 'hello@axisliving.co.zm'}>`
+export const FROM = `${process.env.RESEND_FROM_NAME || 'NOA Living Studio'} <${process.env.RESEND_FROM_EMAIL || 'hello@noalivingstudio.co.zm'}>`
 export const AUDIENCE_ID = process.env.RESEND_AUDIENCE_ID

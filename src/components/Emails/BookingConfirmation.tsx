@@ -59,7 +59,7 @@ export const BookingConfirmationEmail: React.FC<Readonly<BookingConfirmationEmai
                     Dear {name},
                 </p>
                 <p style={{ fontSize: '16px', lineHeight: '1.8', color: '#1C1C1C', marginBottom: '32px', fontFamily: "'Manrope', sans-serif" }}>
-                    Thank you for booking a consultation with Axis Living. We are looking forward to discussing your project and helping you bring your vision to life.
+                    Thank you for booking a consultation with NOA Living Studio. We are looking forward to discussing your project and helping you bring your vision to life.
                 </p>
 
                 {/* Appointment Details */}
@@ -137,7 +137,7 @@ export const BookingConfirmationEmail: React.FC<Readonly<BookingConfirmationEmai
                 letterSpacing: '0.05em',
                 fontFamily: "'Manrope', sans-serif",
             }}>
-                <p style={{ margin: '0 0 10px' }}>&copy; {new Date().getFullYear()} Axis Living. All rights reserved.</p>
+                <p style={{ margin: '0 0 10px' }}>&copy; {new Date().getFullYear()} NOA Living Studio. All rights reserved.</p>
                 <p style={{ margin: 0 }}>Lusaka, Zambia</p>
             </div>
         </div>

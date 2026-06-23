@@ -80,7 +80,7 @@ export async function POST(req: Request) {
             resend.emails.send({ from: FROM, to: [booking.email], subject, html }),
             resend.emails.send({
                 from: FROM,
-                to: [process.env.ADMIN_EMAIL || process.env.RESEND_FROM_EMAIL || 'hello@axisliving.co.zm'],
+                to: [process.env.ADMIN_EMAIL || process.env.RESEND_FROM_EMAIL || 'hello@noalivingstudio.co.zm'],
                 subject: `Booking Cancelled: ${booking.name}`,
                 text: [
                     'A client has cancelled their booking.',

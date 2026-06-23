@@ -1,16 +1,16 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-    title: "Privacy Policy | Axis Living",
-    description: "How Axis Living collects, uses, and protects your personal information.",
+    title: "Privacy Policy | NOA Living Studio",
+    description: "How NOA Living Studio collects, uses, and protects your personal information.",
 };
 
 const SECTIONS = [
     {
         title: "Who We Are",
-        content: `Axis Living is a bespoke interior design studio based in Lusaka, Zambia. We operate the website axisliving.co.zm. When you book a consultation or subscribe to receive our lookbook, you are sharing information directly with us.
+        content: `NOA Living Studio is a bespoke interior design studio based in Lusaka, Zambia. We operate the website noalivingstudio.co.zm. When you book a consultation or subscribe to receive our lookbook, you are sharing information directly with us.
 
-For any privacy-related questions, you can reach us at hello@axisliving.co.zm.`,
+For any privacy-related questions, you can reach us at hello@noalivingstudio.co.zm.`,
     },
     {
         title: "What Information We Collect",
@@ -42,11 +42,11 @@ If you add analytics or tracking tools in the future, this policy will be update
     },
     {
         title: "Data Retention",
-        content: `We retain booking records for as long as they are relevant to our business relationship with you. If you would like us to delete your information, please email us at hello@axisliving.co.zm and we will action your request within 14 days.`,
+        content: `We retain booking records for as long as they are relevant to our business relationship with you. If you would like us to delete your information, please email us at hello@noalivingstudio.co.zm and we will action your request within 14 days.`,
     },
     {
         title: "Your Rights",
-        content: `You have the right to request a copy of the personal data we hold about you, ask us to correct inaccurate information, and ask us to delete your data. To exercise any of these rights, email us at hello@axisliving.co.zm.`,
+        content: `You have the right to request a copy of the personal data we hold about you, ask us to correct inaccurate information, and ask us to delete your data. To exercise any of these rights, email us at hello@noalivingstudio.co.zm.`,
     },
     {
         title: "Changes to This Policy",
@@ -90,10 +90,10 @@ export default function PrivacyPage() {
                         <p className="text-foreground/40 text-sm font-body">
                             Questions? Email us at{" "}
                             <a
-                                href="mailto:hello@axisliving.co.zm"
+                                href="mailto:hello@noalivingstudio.co.zm"
                                 className="text-accent underline underline-offset-4 hover:text-foreground transition-colors"
                             >
-                                hello@axisliving.co.zm
+                                hello@noalivingstudio.co.zm
                             </a>
                         </p>
                     </div>

@@ -121,7 +121,7 @@ const PostDetailClient = ({ post, relatedPosts }: PostDetailClientProps) => {
                                         return (
                                             <h2
                                                 key={idx}
-                                                className="text-3xl md:text-5xl font-playfair font-bold text-foreground pt-12 max-w-[680px] mx-auto leading-tight"
+                                                className="text-2xl md:text-4xl font-body font-semibold text-foreground pt-12 max-w-[680px] mx-auto leading-snug tracking-tight"
                                             >
                                                 {block.text}
                                             </h2>
@@ -135,7 +135,7 @@ const PostDetailClient = ({ post, relatedPosts }: PostDetailClientProps) => {
                                                 initial={{ opacity: 0, scale: 0.98 }}
                                                 className="bg-accent p-12 md:p-16 my-16 text-white text-center rounded-sm shadow-2xl"
                                             >
-                                                <h3 className="text-2xl md:text-3xl font-heading mb-8 max-w-2xl mx-auto">
+                                                <h3 className="text-2xl md:text-3xl font-body font-light mb-8 max-w-2xl mx-auto">
                                                     {block.text}
                                                 </h3>
                                                 <Link

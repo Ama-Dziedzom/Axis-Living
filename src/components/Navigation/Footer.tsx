@@ -24,25 +24,21 @@ const Footer = ({ siteSettings }: FooterProps) => {
                     {siteSettings?.footerTagline || "DELIBERATE INTERIORS FOR MODERN LIVING"}
                 </span>
                 <h3 className="text-4xl md:text-9xl font-heading text-white/[0.15] tracking-wide leading-tight select-none">
-                    {siteSettings?.studioName || "Axis Living"}
+                    {siteSettings?.studioName || "NOA Living Studio"}
                 </h3>
             </div>
 
             {/* Footer Content */}
             <div className="max-w-5xl mx-auto w-full grid grid-cols-1 md:grid-cols-3 gap-16 border-b border-white/10 pb-16 text-center">
                 <div className="flex flex-col items-center">
-                    <Link href="/" className="relative block">
-                        {siteSettings?.footerLogo ? (
-                            <Image
-                                src={siteSettings.footerLogo}
-                                alt={siteSettings?.studioName || "Axis Living"}
-                                width={160}
-                                height={70}
-                                className="h-24 w-auto object-contain"
-                            />
-                        ) : (
-                            <div className="text-2xl font-heading tracking-widest text-white/40 uppercase">Axis Living</div>
-                        )}
+                    <Link href="/" className="relative block h-12 flex items-center justify-center mb-2">
+                        <Image
+                            src="/noa logo-white.png"
+                            alt={siteSettings?.studioName || "NOA Living Studio"}
+                            width={240}
+                            height={100}
+                            className="h-12 w-auto object-contain scale-[3.5] md:scale-[4] origin-center"
+                        />
                     </Link>
                     <p className="mt-6 text-sm leading-relaxed max-w-xs">
                         {siteSettings?.footerDescription || "Bespoke interior design studio specializing in deliberate, elevated residential and commercial spaces."}
@@ -78,16 +74,16 @@ const Footer = ({ siteSettings }: FooterProps) => {
                 <div className="flex flex-col items-center">
                     <h4 className="text-white text-xl mb-6 tracking-wide font-semibold">Connect</h4>
                     <ul className="space-y-4 text-sm font-body">
-                        <li><a href={`mailto:${siteSettings?.email || "hello@axisliving.co.zm"}`} className="hover:text-accent transition-colors">{siteSettings?.email || "hello@axisliving.co.zm"}</a></li>
-                        <li><Link href={siteSettings?.instagram || "https://instagram.com/axisliving.zm"} target="_blank" className="hover:text-accent transition-colors">Instagram</Link></li>
-                        <li><Link href={siteSettings?.pinterest || "https://pinterest.com/axisliving"} target="_blank" className="hover:text-accent transition-colors">Pinterest</Link></li>
+                        <li><a href={`mailto:${siteSettings?.email || "hello@noalivingstudio.co.zm"}`} className="hover:text-accent transition-colors">{siteSettings?.email || "hello@noalivingstudio.co.zm"}</a></li>
+                        <li><Link href={siteSettings?.instagram || "https://instagram.com/noalivingstudio.zm"} target="_blank" className="hover:text-accent transition-colors">Instagram</Link></li>
+                        <li><Link href={siteSettings?.pinterest || "https://pinterest.com/noalivingstudio"} target="_blank" className="hover:text-accent transition-colors">Pinterest</Link></li>
                         <li>Lusaka, Zambia</li>
                     </ul>
                 </div>
             </div>
 
             <div className="max-w-7xl mx-auto w-full pt-8 flex flex-col md:flex-row justify-between items-center text-xs tracking-widest uppercase font-medium opacity-70">
-                <p>{siteSettings?.copyrightText || `© ${new Date().getFullYear()} Axis Living Studio. All rights reserved.`}</p>
+                <p>{siteSettings?.copyrightText || `© ${new Date().getFullYear()} NOA Living Studio. All rights reserved.`}</p>
                 <div className="mt-4 md:mt-0 flex gap-4">
                     {siteSettings?.email && <a href={`mailto:${siteSettings.email}`}>{siteSettings.email}</a>}
                     {siteSettings?.instagram && <Link href={siteSettings.instagram}>Instagram</Link>}

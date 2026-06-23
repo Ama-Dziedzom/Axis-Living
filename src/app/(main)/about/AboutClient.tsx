@@ -164,7 +164,7 @@ const AboutClient = ({ aboutData }: AboutClientProps) => {
                             </h2>
                             <div className="space-y-8 text-foreground/70 text-lg leading-relaxed font-body">
                                 <p>
-                                    {aboutData?.bio?.body || "Founded in Lusaka, Axis Living is a boutique interior design studio dedicated to crafting meaningful, luxury spaces. We believe that your home should be an extension of your soul—a place where every detail is intentional and every corner inspires comfort."}
+                                    {aboutData?.bio?.body || "Founded in Lusaka, NOA Living Studio is a boutique interior design studio dedicated to crafting meaningful, luxury spaces. We believe that your home should be an extension of your soul—a place where every detail is intentional and every corner inspires comfort."}
                                 </p>
                                 <p>
                                     Our approach is highly collaborative. We work closely with our clients to understand their vision and translate it into a reality that exceeds expectations. From contemporary Minimalist villas to eclectic heritage homes, we bring a refined aesthetic and professional rigour to every project.

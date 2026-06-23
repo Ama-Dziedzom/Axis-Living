@@ -3,7 +3,7 @@ const PAYMENT_BASE_URL = process.env.DPO_PAYMENT_BASE_URL || 'https://secure.3gd
 const COMPANY_TOKEN = process.env.DPO_COMPANY_TOKEN!;
 const SERVICE_TYPE = process.env.DPO_SERVICE_TYPE || '5525';
 
-function extractXml(xml: string, tag: string): string {
+function extractXml(xml: string, tag: string): string {   
     const match = xml.match(new RegExp(`<${tag}>([^<]*)<\\/${tag}>`));
     return match ? match[1].trim() : '';
 }
@@ -14,13 +14,12 @@ async function dpoPost(xml: string): Promise<string> {
         headers: {
             'Content-Type': 'text/xml',
             'Accept': 'text/xml, application/xml',
-            'User-Agent': 'Mozilla/5.0 (compatible; AxisLiving/1.0)',
-            'Cache-Control': 'no-cache',
         },
         body: xml,
     });
     if (!res.ok) {
-        throw new Error(`DPO API error: ${res.status}`);
+        const body = await res.text().catch(() => '(no body)');
+        throw new Error(`DPO API error: ${res.status} — ${body}`);
     }
     return res.text();
 }
@@ -68,7 +67,7 @@ export async function createToken(params: {
   <Services>
     <Service>
       <ServiceType>${SERVICE_TYPE}</ServiceType>
-      <ServiceDescription>Design Consultation - Axis Living</ServiceDescription>
+      <ServiceDescription>Design Consultation - NOA Living Studio</ServiceDescription>
       <ServiceDate>${todayServiceDate()}</ServiceDate>
     </Service>
   </Services>

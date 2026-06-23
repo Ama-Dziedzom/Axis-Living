@@ -2,7 +2,7 @@ import { MetadataRoute } from 'next'
 import { projects } from '@/data/projects'
 
 export default function sitemap(): MetadataRoute.Sitemap {
-    const baseUrl = 'https://axisliving.co.zm'
+    const baseUrl = 'https://noalivingstudio.co.zm'
 
     // Projects dynamic routes
     const projectUrls = projects.map((project) => ({

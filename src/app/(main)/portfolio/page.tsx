@@ -3,7 +3,7 @@ import PortfolioClient from "./PortfolioClient";
 import { fetchProjects } from "@/lib/data";
 
 export const metadata: Metadata = {
-    title: "Portfolio | Axis Living - Bespoke Interiors",
+    title: "Portfolio | NOA Living Studio - Bespoke Interiors",
     description: "Explore our collection of bespoke residential and commercial interior design projects. From minimalist retreats to luxury estates.",
 };
 

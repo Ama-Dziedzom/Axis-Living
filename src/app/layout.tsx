@@ -2,10 +2,10 @@ import type { Metadata } from 'next'
 import '@/styles/globals.css'
 
 export const metadata: Metadata = {
-    metadataBase: new URL('https://axisliving.co.zm'),
+    metadataBase: new URL('https://noalivingstudio.co.zm'),
     title: {
-        default: 'Axis Living | Bespoke Interiors - Custom Design, Lusaka',
-        template: '%s | Axis Living',
+        default: 'NOA Living Studio | Bespoke Interiors - Custom Design, Lusaka',
+        template: '%s | NOA Living Studio',
     },
     description: 'Spaces designed for the way you live. We create interiors that are as intentional as they are beautiful, tailored to your life, not a trend. Lusaka-based interior design studio.',
     icons: {

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { randomBytes } from 'crypto';
 import { createToken, chargeTokenMobile } from '@/lib/dpo';
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://axisliving.co.zm';
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://noalivingstudio.co.zm';
 
 export async function POST(req: Request) {
     try {
