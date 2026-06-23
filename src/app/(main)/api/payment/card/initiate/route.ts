@@ -53,8 +53,14 @@ export async function POST(req: Request) {
         });
 
         if (dbError) {
-            console.error('Supabase pending booking error:', dbError);
-            return NextResponse.json({ success: false, message: 'Failed to create booking' }, { status: 500 });
+            console.error('Supabase pending booking error:', JSON.stringify(dbError, null, 2));
+            return NextResponse.json({
+                success: false,
+                message: 'Failed to create booking',
+                detail: dbError.message,
+                code: dbError.code,
+                hint: dbError.hint,
+            }, { status: 500 });
         }
 
         return NextResponse.json({
