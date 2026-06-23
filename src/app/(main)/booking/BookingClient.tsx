@@ -137,7 +137,6 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
 
     // Payment state — shared
     const [paymentMethod, setPaymentMethod] = useState<"mobile_money" | "card">("mobile_money");
-    const [chargeId, setChargeId] = useState<string | null>(null);
     const [paymentReference, setPaymentReference] = useState<string | null>(null);
     const [paymentStatus, setPaymentStatus] = useState<"idle" | "initiating" | "pending" | "failed">("idle");
     const pollCancelledRef = useRef(false);
@@ -147,13 +146,7 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
     const [mobilePhone, setMobilePhone] = useState("");
 
     // Card
-    const [cardNumber, setCardNumber] = useState("");
-    const [cardName, setCardName] = useState("");
-    const [cardExpiry, setCardExpiry] = useState("");
-    const [cardCvv, setCardCvv] = useState("");
-    const [cardStep, setCardStep] = useState<"form" | "pin" | "otp" | "redirect" | "processing">("form");
-    const [cardPinInput, setCardPinInput] = useState("");
-    const [cardOtpInput, setCardOtpInput] = useState("");
+    const [cardStep, setCardStep] = useState<"form" | "redirect" | "processing">("form");
     const [cardRedirectUrl, setCardRedirectUrl] = useState<string | null>(null);
 
     useEffect(() => {
@@ -249,17 +242,16 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
             const result = await res.json();
             if (!result.success) throw new Error(result.message);
 
-            setChargeId(result.chargeId);
             setPaymentReference(result.reference);
             setPaymentStatus("pending");
-            pollForPayment(result.chargeId, result.reference);
+            pollForPayment(result.transactionToken, result.reference);
         } catch (error) {
             console.error("Payment initiation error:", error);
             setPaymentStatus("failed");
         }
     };
 
-    const pollForPayment = (cId: string, reference: string) => {
+    const pollForPayment = (token: string, reference: string) => {
         pollCancelledRef.current = false;
         let attempts = 0;
         const maxAttempts = 24; // 2 minutes at 5s intervals
@@ -268,7 +260,7 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
             if (pollCancelledRef.current) return;
             attempts++;
             try {
-                const res = await fetch(`/api/payment/verify?charge_id=${cId}`);
+                const res = await fetch(`/api/payment/verify?token=${token}`);
                 const result = await res.json();
 
                 if (result.status === "succeeded") {
@@ -295,19 +287,9 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
         setTimeout(poll, 5000);
     };
 
-    const formatCardNumber = (val: string) =>
-        val.replace(/\D/g, '').slice(0, 16).replace(/(.{4})/g, '$1 ').trim();
-
-    const formatExpiry = (val: string) => {
-        const digits = val.replace(/\D/g, '').slice(0, 4);
-        return digits.length > 2 ? `${digits.slice(0, 2)}/${digits.slice(2)}` : digits;
-    };
-
     const handleCardPaymentInitiate = async () => {
         setPaymentStatus("initiating");
         setCardStep("processing");
-
-        const [expiryMonth, expiryYear] = cardExpiry.split('/');
 
         try {
             const res = await fetch('/api/payment/card/initiate', {
@@ -317,10 +299,6 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
                     name: formData.name,
                     email: formData.email,
                     phone: formData.phone,
-                    cardNumber: cardNumber.replace(/\s/g, ''),
-                    expiryMonth: expiryMonth?.trim(),
-                    expiryYear: expiryYear?.trim(),
-                    cvv: cardCvv,
                     amount: currency.amount,
                     currency: currency.code,
                 }),
@@ -329,71 +307,13 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
             const result = await res.json();
             if (!result.success) throw new Error(result.message);
 
-            setChargeId(result.chargeId);
             setPaymentReference(result.reference);
-            handleCardNextAction(result.chargeId, result.reference, result.nextAction, result.status);
+            setCardRedirectUrl(result.paymentUrl);
+            setCardStep("redirect");
+            setPaymentStatus("pending");
+            pollForPayment(result.transactionToken, result.reference);
         } catch (error) {
             console.error('Card payment error:', error);
-            setPaymentStatus("failed");
-            setCardStep("form");
-        }
-    };
-
-    const handleCardNextAction = (
-        cId: string,
-        reference: string,
-        nextAction: { type: string; redirect_url?: { url: string } } | null,
-        status: string,
-    ) => {
-        if (status === 'succeeded' || nextAction === null) {
-            confirmBooking(reference);
-            return;
-        }
-
-        switch (nextAction?.type) {
-            case 'requires_pin':
-                setCardStep("pin");
-                setPaymentStatus("idle");
-                break;
-            case 'requires_otp':
-                setCardStep("otp");
-                setPaymentStatus("idle");
-                break;
-            case 'redirect_url':
-                setCardRedirectUrl(nextAction.redirect_url?.url ?? null);
-                setCardStep("redirect");
-                setPaymentStatus("pending");
-                pollForPayment(cId, reference);
-                break;
-            default:
-                setPaymentStatus("failed");
-                setCardStep("form");
-        }
-    };
-
-    const handleCardAuthorize = async (type: 'pin' | 'otp') => {
-        if (!chargeId || !paymentReference) return;
-        setPaymentStatus("initiating");
-        setCardStep("processing");
-
-        try {
-            const res = await fetch('/api/payment/card/authorize', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    chargeId,
-                    type,
-                    pin: type === 'pin' ? cardPinInput : undefined,
-                    otp: type === 'otp' ? cardOtpInput : undefined,
-                }),
-            });
-
-            const result = await res.json();
-            if (!result.success) throw new Error(result.message);
-
-            handleCardNextAction(chargeId, paymentReference, result.nextAction, result.status);
-        } catch (error) {
-            console.error('Card authorization error:', error);
             setPaymentStatus("failed");
             setCardStep("form");
         }
@@ -440,16 +360,9 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
         setPaymentMethod("mobile_money");
         setMobilePhone("");
         setMobileNetwork("AIRTEL");
-        setChargeId(null);
         setPaymentReference(null);
         setPaymentStatus("idle");
-        setCardNumber("");
-        setCardName("");
-        setCardExpiry("");
-        setCardCvv("");
         setCardStep("form");
-        setCardPinInput("");
-        setCardOtpInput("");
         setCardRedirectUrl(null);
     };
 
@@ -982,7 +895,7 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
                                         </motion.button>
 
                                         <p className="text-center text-foreground/40 text-xs mt-2">
-                                            Secure payment via Flutterwave. Your slot is reserved once payment is complete.
+                                            Secure payment via DPO Pay. Your slot is reserved once payment is complete.
                                         </p>
                                     </form>
                                 </motion.div>
@@ -1025,7 +938,7 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
                                             {cardStep === "redirect" && cardRedirectUrl && (
                                                 <div className="space-y-4 mb-8">
                                                     <p className="text-foreground/50 text-sm max-w-xs leading-relaxed">
-                                                        Your bank requires additional verification. Complete it in the new tab, then return here.
+                                                        Complete your card payment in the new tab, then return here.
                                                     </p>
                                                     <a
                                                         href={cardRedirectUrl}
@@ -1047,7 +960,7 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
                                                     />
                                                 ))}
                                             </div>
-                                            {process.env.NEXT_PUBLIC_FLUTTERWAVE_SANDBOX === 'true' && paymentReference && (
+                                            {process.env.NEXT_PUBLIC_DPO_SANDBOX === 'true' && paymentReference && (
                                                 <button
                                                     onClick={() => confirmBooking(paymentReference)}
                                                     className="text-xs uppercase tracking-widest text-foreground/30 border border-dashed border-foreground/20 px-4 py-2 rounded-full hover:text-accent hover:border-accent transition-colors"
@@ -1073,59 +986,6 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
                                             >
                                                 Try Again
                                             </button>
-                                        </div>
-
-                                    ) : cardStep === "pin" ? (
-                                        /* ── PIN entry ── */
-                                        <div className="flex flex-col items-center justify-center py-8 text-center max-w-sm mx-auto">
-                                            <Lock size={32} className="text-accent mb-6" />
-                                            <p className="text-foreground/40 text-xs uppercase tracking-[0.3em] font-bold mb-2">Card PIN Required</p>
-                                            <p className="text-xl font-heading mb-8">Enter your card PIN</p>
-                                            <input
-                                                type="password"
-                                                inputMode="numeric"
-                                                maxLength={6}
-                                                placeholder="••••"
-                                                value={cardPinInput}
-                                                onChange={(e) => setCardPinInput(e.target.value.replace(/\D/g, ''))}
-                                                className="w-full text-center text-2xl tracking-[0.5em] py-4 border border-foreground/10 rounded-sm focus:outline-none focus:border-accent mb-6"
-                                            />
-                                            <motion.button
-                                                onClick={() => handleCardAuthorize('pin')}
-                                                disabled={cardPinInput.length < 4}
-                                                whileHover={{ scale: 1.02 }}
-                                                whileTap={{ scale: 0.98 }}
-                                                className="w-full bg-accent text-white py-4 rounded-full text-xs font-bold tracking-[0.3em] uppercase disabled:opacity-50"
-                                            >
-                                                Confirm PIN
-                                            </motion.button>
-                                        </div>
-
-                                    ) : cardStep === "otp" ? (
-                                        /* ── OTP entry ── */
-                                        <div className="flex flex-col items-center justify-center py-8 text-center max-w-sm mx-auto">
-                                            <Mail size={32} className="text-accent mb-6" />
-                                            <p className="text-foreground/40 text-xs uppercase tracking-[0.3em] font-bold mb-2">OTP Verification</p>
-                                            <p className="text-xl font-heading mb-3">Enter the OTP sent to you</p>
-                                            <p className="text-foreground/40 text-sm mb-8">Check your phone or email for a one-time code from your bank.</p>
-                                            <input
-                                                type="text"
-                                                inputMode="numeric"
-                                                maxLength={8}
-                                                placeholder="123456"
-                                                value={cardOtpInput}
-                                                onChange={(e) => setCardOtpInput(e.target.value.replace(/\D/g, ''))}
-                                                className="w-full text-center text-2xl tracking-[0.5em] py-4 border border-foreground/10 rounded-sm focus:outline-none focus:border-accent mb-6"
-                                            />
-                                            <motion.button
-                                                onClick={() => handleCardAuthorize('otp')}
-                                                disabled={cardOtpInput.length < 4}
-                                                whileHover={{ scale: 1.02 }}
-                                                whileTap={{ scale: 0.98 }}
-                                                className="w-full bg-accent text-white py-4 rounded-full text-xs font-bold tracking-[0.3em] uppercase disabled:opacity-50"
-                                            >
-                                                Verify OTP
-                                            </motion.button>
                                         </div>
 
                                     ) : (
@@ -1234,75 +1094,24 @@ const BookingClient = ({ siteSettings }: BookingClientProps) => {
                                                 </div>
                                             )}
 
-                                            {/* ── Card form ── */}
+                                            {/* ── Card ── */}
                                             {paymentMethod === "card" && (
-                                                <div className="max-w-sm mx-auto space-y-4">
-                                                    {/* Card number */}
-                                                    <div className="relative">
-                                                        <CreditCard size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground/25" />
-                                                        <input
-                                                            type="text"
-                                                            inputMode="numeric"
-                                                            placeholder="Card Number"
-                                                            value={cardNumber}
-                                                            onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
-                                                            className="w-full pl-12 pr-4 py-4 bg-white border border-foreground/10 rounded-sm text-sm text-neutral-800 font-body placeholder:text-foreground/30 focus:outline-none focus:border-accent transition-all tracking-wider"
-                                                        />
-                                                    </div>
-                                                    {/* Cardholder name */}
-                                                    <div className="relative">
-                                                        <User size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground/25" />
-                                                        <input
-                                                            type="text"
-                                                            placeholder="Cardholder Name"
-                                                            value={cardName}
-                                                            onChange={(e) => setCardName(e.target.value)}
-                                                            className="w-full pl-12 pr-4 py-4 bg-white border border-foreground/10 rounded-sm text-sm text-neutral-800 font-body placeholder:text-foreground/30 focus:outline-none focus:border-accent transition-all"
-                                                        />
-                                                    </div>
-                                                    {/* Expiry + CVV */}
-                                                    <div className="flex gap-4">
-                                                        <div className="relative flex-1">
-                                                            <input
-                                                                type="text"
-                                                                inputMode="numeric"
-                                                                placeholder="MM/YY"
-                                                                value={cardExpiry}
-                                                                onChange={(e) => setCardExpiry(formatExpiry(e.target.value))}
-                                                                className="w-full px-4 py-4 bg-white border border-foreground/10 rounded-sm text-sm text-neutral-800 font-body placeholder:text-foreground/30 focus:outline-none focus:border-accent transition-all text-center tracking-wider"
-                                                            />
-                                                        </div>
-                                                        <div className="relative flex-1">
-                                                            <Lock size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground/25" />
-                                                            <input
-                                                                type="password"
-                                                                inputMode="numeric"
-                                                                placeholder="CVV"
-                                                                maxLength={4}
-                                                                value={cardCvv}
-                                                                onChange={(e) => setCardCvv(e.target.value.replace(/\D/g, ''))}
-                                                                className="w-full pl-9 pr-4 py-4 bg-white border border-foreground/10 rounded-sm text-sm text-neutral-800 font-body placeholder:text-foreground/30 focus:outline-none focus:border-accent transition-all"
-                                                            />
-                                                        </div>
-                                                    </div>
+                                                <div className="max-w-sm mx-auto space-y-5">
+                                                    <p className="text-center text-foreground/50 text-sm leading-relaxed">
+                                                        You&apos;ll be taken to DPO Pay&apos;s secure page to enter your card details.
+                                                    </p>
                                                     <motion.button
                                                         type="button"
                                                         onClick={handleCardPaymentInitiate}
-                                                        disabled={
-                                                            cardNumber.replace(/\s/g, '').length < 16 ||
-                                                            !cardName ||
-                                                            cardExpiry.length < 5 ||
-                                                            cardCvv.length < 3
-                                                        }
                                                         whileHover={{ scale: 1.02 }}
                                                         whileTap={{ scale: 0.98 }}
-                                                        className="w-full bg-accent text-white py-5 rounded-full text-xs font-bold tracking-[0.3em] uppercase flex items-center justify-center gap-3 hover:shadow-lg hover:shadow-accent/20 transition-shadow disabled:opacity-50"
+                                                        className="w-full bg-accent text-white py-5 rounded-full text-xs font-bold tracking-[0.3em] uppercase flex items-center justify-center gap-3 hover:shadow-lg hover:shadow-accent/20 transition-shadow"
                                                     >
                                                         Pay {currency.symbol}{currency.amount.toLocaleString()}
                                                         <Lock size={14} />
                                                     </motion.button>
                                                     <p className="text-center text-foreground/30 text-xs flex items-center justify-center gap-1">
-                                                        <Lock size={10} /> Encrypted &amp; secured by Flutterwave
+                                                        <Lock size={10} /> Encrypted &amp; secured by DPO Pay
                                                     </p>
                                                 </div>
                                             )}

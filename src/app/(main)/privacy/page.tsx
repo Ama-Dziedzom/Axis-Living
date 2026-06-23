@@ -30,7 +30,7 @@ We do not sell, rent, or trade your personal information to any third party.`,
 
 • Supabase — our database, used to store booking records securely (supabase.com/privacy)
 • Resend — our email delivery service, used to send booking confirmations and newsletters (resend.com/legal/privacy-policy)
-• Flutterwave — our payment processor, used to handle consultation fees (flutterwave.com/gb/privacy-policy)
+• DPO Pay — our payment processor, used to handle consultation fees (directpay.online/privacy-policy)
 
 These providers process only the data necessary to perform their service and are bound by their own data protection obligations.`,
     },

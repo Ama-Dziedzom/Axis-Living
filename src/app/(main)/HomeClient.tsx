@@ -168,6 +168,7 @@ export default function HomeClient({ featuredProjects, featuredPosts, siteSettin
                         src={heroImage}
                         alt="Luxury Interior Design"
                         fill
+                        sizes="100vw"
                         className="object-cover brightness-50"
                         priority
                     />
@@ -267,11 +268,12 @@ export default function HomeClient({ featuredProjects, featuredPosts, siteSettin
                         viewport={{ once: true }}
                         className="md:w-1/2 relative aspect-[4/5] w-full"
                     >
-                        <div className="w-full h-full bg-neutral-100 rounded-sm flex items-center justify-center overflow-hidden">
+                        <div className="relative w-full h-full bg-neutral-100 rounded-sm overflow-hidden">
                             <Image
                                 src={siteSettings?.aboutSection?.image || "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?w=1200&q=80"}
                                 alt="Studio Aesthetic"
                                 fill
+                                sizes="(max-width: 768px) 100vw, 50vw"
                                 className="object-cover grayscale hover:grayscale-0 transition-all duration-700"
                             />
                         </div>
@@ -320,6 +322,7 @@ export default function HomeClient({ featuredProjects, featuredPosts, siteSettin
                                         src={project.coverImage || "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=1200&q=80"}
                                         alt={project.title}
                                         fill
+                                        sizes="(max-width: 768px) 100vw, 33vw"
                                         className="object-cover transition-transform duration-700 group-hover:scale-110"
                                     />
                                     <div className="absolute inset-0 bg-accent/80 opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col items-center justify-center text-center p-6">
@@ -454,6 +457,7 @@ export default function HomeClient({ featuredProjects, featuredPosts, siteSettin
                                         src={post.coverImage || "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=1200&q=80"}
                                         alt={post.title}
                                         fill
+                                        sizes="(max-width: 768px) 100vw, 45vw"
                                         className="object-cover transition-transform duration-1000 group-hover:scale-110"
                                     />
                                     <div className="absolute top-4 left-4">
@@ -485,6 +489,7 @@ export default function HomeClient({ featuredProjects, featuredPosts, siteSettin
                         src={siteSettings?.preFooterSection?.image || "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1600&q=80"}
                         alt="Beautifully designed interior space"
                         fill
+                        sizes="100vw"
                         className="object-cover brightness-[0.3]"
                     />
                 </div>

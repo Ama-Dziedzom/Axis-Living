@@ -1,32 +1,38 @@
 import { NextResponse } from 'next/server';
-import { createCustomer, createMobileMoneyPaymentMethod, createCharge } from '@/lib/flutterwave';
 import { randomBytes } from 'crypto';
+import { createToken, chargeTokenMobile } from '@/lib/dpo';
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://axisliving.co.zm';
 
 export async function POST(req: Request) {
     try {
         const { name, email, phone, network, amount, currency } = await req.json();
 
-        if (!name || !email || !phone || !network || !amount || !currency) {
+        if (!phone || !network || !amount || !currency) {
             return NextResponse.json({ success: false, message: 'Missing required fields' }, { status: 400 });
         }
 
-        const customer = await createCustomer(email, name, phone);
-        const customerId = customer.data?.id;
-        if (!customerId) throw new Error('Failed to create customer');
-
-        const paymentMethod = await createMobileMoneyPaymentMethod(network, phone, customerId);
-        const paymentMethodId = paymentMethod.data?.id;
-        if (!paymentMethodId) throw new Error('Failed to create payment method');
-
         const reference = `ALV-${Date.now()}-${randomBytes(4).toString('hex')}`;
-        const charge = await createCharge(customerId, paymentMethodId, amount, currency, reference);
 
-        return NextResponse.json({
-            success: true,
-            chargeId: charge.data?.id,
+        const nameParts = (name ?? '').trim().split(/\s+/);
+        const firstName = nameParts[0] || undefined;
+        const lastName = nameParts.slice(1).join(' ') || undefined;
+
+        const { transactionToken } = await createToken({
+            amount,
+            currency,
             reference,
-            status: charge.data?.status,
+            redirectUrl: `${SITE_URL}/booking`,
+            backUrl: `${SITE_URL}/booking`,
+            customerFirstName: firstName,
+            customerLastName: lastName,
+            customerEmail: email || undefined,
+            customerPhone: phone || undefined,
         });
+
+        await chargeTokenMobile(transactionToken, phone, network);
+
+        return NextResponse.json({ success: true, transactionToken, reference });
     } catch (error) {
         console.error('Payment initiation error:', error);
         return NextResponse.json(
